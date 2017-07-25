@@ -23,6 +23,10 @@ html {
   box-sizing: border-box;
 }
 
+.head {
+  margin-bottom: -40px;
+}
+
 a, .wrapper {
   color: hsl(214, 64%, 60%);
 }
