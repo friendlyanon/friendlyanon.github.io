@@ -1,23 +1,36 @@
----
-layout: default
----
-
-<div class="home">
-
-  <h1 class="page-heading">Posts</h1>
-
-  <ul class="post-list">
-    {% for post in site.posts %}
-      <li>
-        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
-
-        <h2>
-          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title | escape }}</a>
-        </h2>
-      </li>
-    {% endfor %}
-  </ul>
-
-  <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
-
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<title>friendlyanon.github.io - projects</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<link href="https://fonts.googleapis.com/css?family=Anonymous+Pro:400,700&amp;subset=latin-ext" rel="stylesheet" />
+<link rel="stylesheet" href="./css/style.css" />
+<script type="text/javascript">
+  //setTimeout(() => window.location.reload(), 10000);
+</script>
+</head>
+<body>
+<div class="wrapper">
+<div class="head">
+<span class="hash">#</span>
+<span class="title">my projects</span>
 </div>
+<a class="postcard-1" href="//github.com/friendlyanon/gif-engine-js">
+<span class="preview"><img src="./img/gif-engine-js.png" alt="gif-engine-js" /></span>
+<span class="description">
+<span class="name">gif-engine-js</span>
+<span class="detail">Single-file, bare bones GIF parser in ECMAScript 2017</span>
+</span>
+</a>
+<a class="postcard-2 nsfw" href="//github.com/friendlyanon/GelbooruEnhancement">
+<span class="preview"><img src="./img/gelbooru.png" alt="GelbooruEnhancement" /></span>
+<span class="description">
+<span class="name"><strong>*NSFW*</strong> Gelbooru Enhancement</span>
+<span class="detail">Image Viewer and Endless Scroll userscripts for various boorus.<small>Gelbooru, SankakuComplex, paheal, TBIB etc.</small></span>
+</span>
+</a>
+</div>
+</body>
+</html>
