@@ -95,6 +95,7 @@ a, .wrapper {
 
 .description small {
   display: block;
+  font-size: 13px;
 }
 
 .name::after {
