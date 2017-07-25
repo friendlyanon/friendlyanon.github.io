@@ -1,0 +1,83 @@
+* {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+html {
+  background-color: #222;
+  background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%3E%3Cstyle%3E.a%7Bfill%3Anone%3Bstroke%3A%232538a7%3Bstroke-width%3A2%7D%3C%2Fstyle%3E%3Cline%20x1%3D%22-1%22%20y1%3D%22-1%22%20x2%3D%2231%22%20y2%3D%2231%22%20class%3D%22a%22%2F%3E%3Cline%20y2%3D%221%22%20x2%3D%2231%22%20y1%3D%22-1%22%20x1%3D%2229%22%20class%3D%22a%22%2F%3E%3Cline%20x1%3D%22-1%22%20y1%3D%2229%22%20x2%3D%221%22%20y2%3D%2231%22%20class%3D%22a%22%2F%3E%3C%2Fsvg%3E);
+  font-family: 'Anonymous Pro', monospace;
+  font-size: 16px;
+}
+
+.wrapper {
+  width: 500px;
+  background-color: #282828;
+  margin: 0 auto;
+  top: -5px;
+  position: relative;
+  box-shadow: 5px 5px 0 black;
+  border: solid 1px #888;
+  padding: 25px 20px 0;
+  box-sizing: border-box;
+}
+
+a, .wrapper {
+  color: hsl(214, 64%, 60%);
+}
+
+.hash {
+  font-size: 120px;
+  position: relative;
+  top: -49px;
+}
+
+.title {
+  font-size: 40px;
+  float: right;
+}
+
+[class^="postcard-"] {
+  display: flex;
+  height: 100px;
+  border: solid 1px #555;
+  transition: all .3s;
+  margin-bottom: 20px;
+  text-decoration: none;
+}
+
+[class^="postcard-"]:hover {
+  border-color: #bbb;
+}
+
+.nsfw:hover {
+  background-color: rgb(80, 10, 10);
+}
+
+.nsfw strong {
+  font-weight: 900;
+  color: rgb(200, 30, 0);
+}
+
+.preview {
+  width: 100px;
+}
+
+.description {
+  flex-grow: 1;
+  box-sizing: border-box;
+  padding: 10px;
+  text-align: right;
+}
+
+.description small {
+  display: block;
+}
+
+.name::after {
+  clear: both;
+  display: block;
+  content: '';
+  padding-bottom: 10px;
+}
