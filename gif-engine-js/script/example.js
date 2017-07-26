@@ -7,7 +7,7 @@
   let width = 0;
   let height = 0;
   const canvas = d.createElement("canvas");
-  window.ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
   const track = () => performance.now();
   let time = 0;
   const display = function() {
