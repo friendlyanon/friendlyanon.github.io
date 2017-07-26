@@ -19,16 +19,26 @@ html {
   position: relative;
   box-shadow: 5px 6px 0 black;
   border: solid 1px #888;
-  padding: 25px 20px 0;
+  padding: 25px 20px 20px;
   box-sizing: border-box;
 }
 
 .head {
-  margin-bottom: -50px;
+  height: 50px;
+  padding-bottom: 20px;
 }
 
-a, .wrapper {
+.wrapper, a {
   color: hsl(214, 64%, 60%);
+}
+
+a {
+  text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  display: block;
+  padding-bottom: 10px;
 }
 
 .hash {
@@ -47,8 +57,10 @@ a, .wrapper {
   height: 100px;
   border: solid 1px #555;
   transition: all .3s;
+}
+
+[class^="postcard-"]:not(:last-of-type) {
   margin-bottom: 20px;
-  text-decoration: none;
 }
 
 [class^="postcard-"]:hover {
