@@ -15,7 +15,7 @@
     let now = track();
     if (now - time > delays[index]) {
       ctx.clearRect(0, 0, width, height);
-      ctx.putImageData(frames[index], 0, 0);
+      ctx.putImageData(...frames[index]);
       time = now;
       ++index;
     }
