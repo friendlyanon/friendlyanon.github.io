@@ -118,3 +118,13 @@ h1, h2, h3, h4, h5, h6 {
   content: '';
   padding-bottom: 10px;
 }
+
+.example1 {
+  width: 160px;
+  height: 224px;
+}
+
+.example2 {
+  width: 500px;
+  height: 500px;
+}
