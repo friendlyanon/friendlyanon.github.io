@@ -34,10 +34,10 @@
     setTimeout(drawFrame, Math.max(delays[index] - 5, 0));
     ++index;
   };
-  d.querySelector("button").addEventListener("click", e => {
+  d.querySelector(".example1 button").addEventListener("click", e => {
     const target = e.currentTarget.parentNode;
     e.currentTarget.remove();
-    fetch("./img/gif.gif")
+    fetch("./img/gif.gif", { headers: { pragma: "no-cache", "cache-control": "no-cache" }})
       .then(x => x.arrayBuffer())
       .then(GIF)
       .then(async (o, err) => {
