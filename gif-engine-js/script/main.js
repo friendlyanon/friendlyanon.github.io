@@ -1,0 +1,46 @@
+const clickHandlerToDisplayGIF = function(e) {
+  let compiledFrames = void 0;
+  let delays = void 0;
+  let index = 0;
+  let isVariableDelays = false;
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const drawFrameTimeout = function() {
+    if (!(index < compiledFrames.length)) index = 0;
+    ctx.putImageData(...compiledFrames[index]);
+    setTimeout(drawFrame, delays[index]);
+    ++index;
+  };
+  const drawFrameInterval = function() {
+    if (!(index < compiledFrames.length)) index = 0;
+    ctx.putImageData(...compiledFrames[index]);
+    ++index;
+  };
+  const target = e.currentTarget.parentNode, wait = document.createTextNode("Please wait, loading GIF...");
+  const url = e.currentTarget.dataset.url;
+  target.replaceChild(wait, e.currentTarget);
+  const worker = new Worker("./script/gif-engine-js.min.js");
+  worker.onmessage = e => {
+    [compiledFrames, delays] = e.data;
+    canvas.width = e.data[2];
+    canvas.height = e.data[3];
+    target.replaceChild(canvas, wait);
+    if (delays.length > 1)
+      for (let i = 1; delays.length > i; ++i)
+        if (delays[0] !== delays[i]) {
+          isVariableDelays = true;
+          break;
+        }
+    if (isVariableDelays)
+      drawFrameTimeout();
+    else
+      setInterval(drawFrameInterval, delays[0]);
+    worker.terminate();
+  };
+  const a = document.createElement("a");
+  a.setAttribute("href", url);
+  worker.postMessage(a.href);
+};
+
+for (let el of document.querySelectorAll("[class^='example'] button"))
+  el.addEventListener("click", clickHandlerToDisplayGIF, { once: true });
