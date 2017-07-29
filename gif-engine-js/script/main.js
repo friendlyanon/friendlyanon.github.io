@@ -44,3 +44,11 @@ const clickHandlerToDisplayGIF = function(e) {
 
 for (let el of document.querySelectorAll("[class^='example'] button"))
   el.addEventListener("click", clickHandlerToDisplayGIF, { once: true });
+
+document.addEventListener("DOMContentLoaded", () => document.body.firstElementChild.style.width = "542px");
+
+document.querySelector(".hash").addEventListener("click", e => {
+  e.preventDefault();
+  document.body.firstElementChild.removeAttribute("style");
+  setTimeout(loc => location = loc, 300, e.currentTarget.href);
+}, { once: true });
