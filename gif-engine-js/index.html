@@ -15,12 +15,26 @@
 <a class="hash" href=".." title="home">#</a>
 <span class="title">gif-engine-js</span>
 </div>
+<span class="example_head">
+On this page you will be able to observe how one could utilize gif-engine-js efficiently to display GIF images on a canvas by looking at the source of the page and the script setting things up (main.js).<br />
+Please do note that this example here uses Workers to avoid any and all JANK in the UI thread for a pleasant experience. The additional code that was inserted into gif-engine-js.js after the main function declaration can be found <a href="//gist.github.com/friendlyanon/c63fe71a01001ce744b94cb65a8fca1e" target="_blank">in this Gist</a>.<br />
+I decided to not include it in the project, because it would make the engine not so bare-bones anymore and if the user wishes to implement a worker addition on their own, then they are more than welcome to transform the engine's code for their own needs or just copy paste my own implementation.
+</span>
 <h1># examples</h1>
 <div class="example1">
 <button data-url="./img/gif.gif">Click me for a dancing girl</button>
 </div>
 <div class="example2">
+<button data-url="./img/miku.gif">Click me for a very cute Miku!</button>
+</div>
+<div class="example3">
 <button data-url="./img/fast_gif.gif">Click me for VERY FAST gif</button>
+</div>
+<div class="example4">
+<button data-url="./img/aesthetic.gif">Click me for ａｅｓｔｈｅｔｉｃ</button>
+</div>
+<div class="example5">
+<button data-url="./img/rainy_aesthetic.gif">Click me for ａｅｓｔｈｅｔｉｃ with rain</button>
 </div>
 </div>
 </body>

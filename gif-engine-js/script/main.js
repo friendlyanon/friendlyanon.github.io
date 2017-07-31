@@ -1,4 +1,4 @@
-const clickHandlerToDisplayGIF = function(e) {
+const clickHandlerToDisplayGIF = async function(e) {
   let compiledFrames = void 0;
   let delays = void 0;
   let index = 0;
@@ -19,8 +19,13 @@ const clickHandlerToDisplayGIF = function(e) {
   const target = e.currentTarget.parentNode, wait = document.createTextNode("Please wait, loading GIF...");
   const url = e.currentTarget.dataset.url;
   target.replaceChild(wait, e.currentTarget);
-  const worker = new Worker("./script/gif-engine-js.min.js");
+  const workerBlob = window.URL.createObjectURL(new Blob([await fetch("./script/gif-engine-js.min.js", { headers: { pragma: "no-cache", "cache-control": "no-cache" }}).then(x => x.text())], {type: 'text/javascript'}));
+  const worker = new Worker(workerBlob);
   worker.onmessage = e => {
+    if (e.data[0] === "log") {
+      const [,...data] = e.data;
+      return console.log(...data);
+    }
     [compiledFrames, delays] = e.data;
     canvas.width = e.data[2];
     canvas.height = e.data[3];
@@ -36,6 +41,9 @@ const clickHandlerToDisplayGIF = function(e) {
     else
       setInterval(drawFrameInterval, delays[0]);
     worker.terminate();
+  };
+  worker.onerror = e => {
+    console.error(e);
   };
   const a = document.createElement("a");
   a.setAttribute("href", url);
