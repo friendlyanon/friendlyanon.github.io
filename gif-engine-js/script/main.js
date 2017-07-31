@@ -8,7 +8,7 @@ const clickHandlerToDisplayGIF = async function(e) {
   const drawFrameTimeout = function() {
     if (!(index < compiledFrames.length)) index = 0;
     ctx.putImageData(...compiledFrames[index]);
-    setTimeout(drawFrame, delays[index]);
+    setTimeout(drawFrameTimeout, delays[index]);
     ++index;
   };
   const drawFrameInterval = function() {
