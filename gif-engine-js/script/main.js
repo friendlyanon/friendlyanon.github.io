@@ -19,8 +19,7 @@ const clickHandlerToDisplayGIF = async function(e) {
   const target = e.currentTarget.parentNode, wait = document.createTextNode("Please wait, loading GIF...");
   const url = e.currentTarget.dataset.url;
   target.replaceChild(wait, e.currentTarget);
-  const workerBlob = window.URL.createObjectURL(new Blob([sessionStorage["worker"] || (sessionStorage["worker"] = await fetch("./script/gif-engine-js.min.js", { headers: { pragma: "no-cache", "cache-control": "no-cache" }}).then(x => x.text()))], {type: 'text/javascript'}));
-  const worker = new Worker(workerBlob);
+  const worker = new Worker("./script/gif-engine-js.min.js");
   worker.onmessage = e => {
     if (e.data[0] === "log") {
       window["ayy"] = e.data[1];
