@@ -151,7 +151,3 @@ div[class^="example"] {
 .example4 {
   height: 350px;
 }
-
-.done .loading_holder {
-  display: none;
-}
