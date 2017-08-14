@@ -152,23 +152,6 @@ div[class^="example"] {
   height: 350px;
 }
 
-.debug_head {
-  margin-top: 15px;
-}
-
-.debug_head.done ~ .debug_result {
-  margin-top: 25px;
-}
-
 .done .loading_holder {
   display: none;
-}
-
-.jsonview span.num {
-  color: lightseagreen;
-}
-
-.jsonview a.prop {
-  color: khaki;
-  font-weight: 500;
 }
