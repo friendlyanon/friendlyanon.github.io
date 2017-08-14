@@ -61,7 +61,7 @@
   for (let el of d.querySelectorAll("[class^='example'] button"))
     el.addEventListener("click", clickHandlerToDisplayGIF, { once: true });
 
-  d.addEventListener("DOMContentLoaded", () => ((d.body.firstElementChild.style.width = "542px"),d.querySelector(".example2 button").scrollIntoView(true)));
+  d.addEventListener("DOMContentLoaded", () => d.body.firstElementChild.style.width = "542px", { once: true });
 
   d.querySelector(".hash").addEventListener("click", e => {
     e.preventDefault();
