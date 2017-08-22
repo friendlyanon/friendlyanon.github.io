@@ -10,7 +10,7 @@
     const drawFrameTimeout = function() {
       if (!(index < compiledFrames.length)) index = 0;
       ctx.putImageData(...compiledFrames[index]);
-      setTimeout(drawFrameTimeout, delays[index]);
+      if (compiledFrames.length !== 1) setTimeout(drawFrameTimeout, delays[index]);
       ++index;
     };
     const drawFrameInterval = function() {
@@ -43,7 +43,7 @@
             isVariableDelays = true;
             break;
           }
-      if (isVariableDelays)
+      if (isVariableDelays || compiledFrames.length === 1)
         drawFrameTimeout();
       else
         setInterval(drawFrameInterval, delays[0]);
