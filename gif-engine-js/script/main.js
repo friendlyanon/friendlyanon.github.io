@@ -24,18 +24,19 @@
     const workerUrl = window.URL.createObjectURL(workerBlob);
     const worker = new Worker(workerUrl);
     const stop = _ => {
-      worker.terminate();
       window.URL.revokeObjectURL(workerUrl);
       console.log("destroyed worker");
     };
     worker.onmessage = e => {
+      console.log(e.data);
       if (e.data[0] === "log") {
         const [,...msg] = e.data;
         return console.log(...msg);
       }
-      [compiledFrames, delays] = e.data;
-      canvas.width = e.data[2];
-      canvas.height = e.data[3];
+      const data = e.data.endResult;
+      [compiledFrames, delays] = data;
+      canvas.width = data[2];
+      canvas.height = data[3];
       target.replaceChild(canvas, wait);
       if (delays.length > 1)
         for (let i = 1; delays.length > i; ++i)
@@ -51,6 +52,7 @@
     };
     worker.onerror = e => {
       console.error(e);
+      worker.terminate();
       stop();
     };
     const a = d.createElement("a");
