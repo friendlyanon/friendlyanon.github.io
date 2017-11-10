@@ -33,8 +33,8 @@
         const [,...msg] = e.data;
         return console.log(...msg);
       }
-      const data = e.data.endResult;
-      [compiledFrames, delays] = data;
+      const { data } = e;
+      ([compiledFrames, delays] = data);
       canvas.width = data[2];
       canvas.height = data[3];
       target.replaceChild(canvas, wait);
