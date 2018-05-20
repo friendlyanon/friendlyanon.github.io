@@ -5,12 +5,31 @@
 <title>friendlyanon.github.io - amiami crawler</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="description" content="Yes" />
+<style>
+.list {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  list-style: none;
+  grid-gap: 5px;
+  padding: 0 10px;
+}
+.item {
+  display: grid;
+  grid-template: auto auto / auto auto;
+  grid-gap: 5px;
+  outline: 1px solid;
+  padding: 2px;
+}
+.item-price {
+  text-align: right;
+}
+</style>
 </head>
 <body>
 <div id="list">
   <input type="text" class="fuzzy-search" />
-  <ul class="list"></ul>
   <ul class="pagination"></ul>
+  <ul class="list"></ul>
 </div>
 </body>
 </html>
