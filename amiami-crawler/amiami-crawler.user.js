@@ -9,7 +9,7 @@
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
-/* global GM_xmlhttpRequest, List, localforage */
+/* global GM_xmlhttpRequest, List, localforage, unsafeWindow */
 /* eslint-disable no-cond-assign */
 
 "use strict";
@@ -381,7 +381,7 @@ View = {
 
 Main = {
   async init() {
-    Object.defineProperty(window, "crawler", {
+    Object.defineProperty(unsafeWindow, "crawler", {
       value: true
     });
     View.init();
