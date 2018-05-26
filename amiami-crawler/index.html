@@ -6,6 +6,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="description" content="Yes" />
 <style>
+.pagination {
+  list-style: none;
+  display: inline-block;
+}
+.pagination > li {
+  padding: 0;
+  margin: 0 10px;
+  display: inline-block;
+}
+.url {
+  min-height: 80px;
+  min-width: 80px;
+}
 .list {
   display: grid;
   grid-template-columns: auto auto auto auto auto;
@@ -14,14 +27,35 @@
   padding: 0 10px;
 }
 .item {
-  display: grid;
-  grid-template: auto auto / auto auto;
-  grid-gap: 5px;
+  display: flexbox;
+  flex-flow: column nowrap;
   outline: 1px solid;
   padding: 2px;
 }
+.item-top {
+  display: flexbox;
+  flex-flow: row nowrap;
+}
+.item-bottom {
+  display: flexbox;
+  flex-flow: row nowrap;
+}
+.item-top, .item-bottom > div {
+  flex-grow: 1;
+}
+.item-bottom, .item-bottom > span {
+  flex-basis: content;
+}
+.item-icon {
+  flex-basis: 80px;
+  min-height: 80px;
+}
 .item-price {
   text-align: right;
+}
+.blacklist {
+  cursor: pointer;
+  color: red;
 }
 </style>
 </head>
