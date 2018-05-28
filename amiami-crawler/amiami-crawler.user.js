@@ -3,7 +3,7 @@
 // @description Crawler for AmiAmi preowned section
 // @namespace   friendlyanon
 // @include     https://friendlyanon.github.io/amiami-crawler/
-// @version     1
+// @version     2
 // @require     https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.js
 // @require     https://cdn.rawgit.com/mozilla/localForage/master/dist/localforage.js
 // @grant       GM_xmlhttpRequest
@@ -252,7 +252,7 @@ View = {
   },
   init() {
     const selector = $(".selector");
-    let current = selector, first = true;
+    let current = selector;
     while (current = current.nextElementSibling) {
       if (!current.dataset.title) continue;
       const { id } = current;
@@ -260,10 +260,11 @@ View = {
       const a = document.createElement("a");
       a.setAttribute("href", "#" + id);
       a.appendChild(new Text(current.dataset.title + " items list"));
-      if (!first) { selector.appendChild(new Text(" | ")); first = false; }
+      selector.appendChild(new Text(" | "));
       selector.appendChild(a);
       current.insertAdjacentHTML("afterend", `<div class="top-title">${current.dataset.top}</div>`);
     }
+    selector.firstChild.remove();
     selector.addEventListener("click", View.selectorHandler);
     document.body.addEventListener("click", View.blacklistHandler);
     $("#history").addEventListener("click", View.historyDisplay);
