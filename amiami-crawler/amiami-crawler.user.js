@@ -244,6 +244,7 @@ View = {
         this.new.clear();
         this.deleted.clear();
       }
+      catch(_) { /*  */ }
       finally {
         this.new =
         this.deleted = undefined;
@@ -302,7 +303,7 @@ View = {
         $("body > #blacklist").hidden
       ) {
         let exampleItem;
-        switch ($(".selector ~ div:not([hidden])").id) {
+        switch ($(".selector ~ div[data-title]:not([hidden])").id) {
           case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
           case "new":       exampleItem = View.new.get("code", code); break;
           case "deleted":   exampleItem = View.deleted.get("code", code); break;
