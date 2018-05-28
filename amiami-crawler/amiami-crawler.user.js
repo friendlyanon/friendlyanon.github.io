@@ -85,7 +85,7 @@ Config = {
       new: Config.changed.new,
       deleted: Config.changed.deleted,
     });
-    while (Config.pastEntries.length > 10) Config.pastEntries.shift();
+    while (Config.pastEntries.length > 30) Config.pastEntries.shift();
     Config.set("history", Config.pastEntries);
     View.historyRender();
   },
@@ -131,7 +131,7 @@ Config = {
 };
 
 Pages = {
-  template: "http://slist.amiami.com/top/search/list?s_st_condition_flg=1&pagemax=50&getcnt=0&pagecnt=${}",
+  template: "http://slist.amiami.com/top/search/list?s_st_condition_flg=1&pagemax=50&getcnt=0&pagecnt=<>",
   current: 0,
   sort: -1,
   main() {
@@ -142,7 +142,7 @@ Pages = {
   req() {
     const details = {
       method: "GET",
-      url: Pages.template.replace("${}", ++Pages.current),
+      url: Pages.template.replace("<>", ++Pages.current),
       onload: Pages.afterReq,
       onerror: console.error,
       onabort: console.error,
@@ -178,7 +178,7 @@ Pages = {
 
 Parser = {
   products: [],
-  codeRegex: /(?:[A-Z0-9]+-)+\d+/,
+  codeRegex: /-[RS]\d*$/,
   parsing: false,
   check() {
     if (Parser.parsing) return;
@@ -207,13 +207,11 @@ Parser = {
       }
       if (name) {
         result.name = name.textContent.trim() || result.name;
-        result.url = name.href;
-        const match = name.search.match(codeRegex);
-        if (match) {
-          result.shortUrl = "http://www.amiami.com/top/detail/detail?gcode=" + (result.code = match[0]);
-          if (Config.blacklist.has(result.code)) continue;
-        }
-        result.fullCode = queryString(name.search).gcode;
+        const { gcode } = queryString(name.search);
+        result.fullCode = gcode;
+        result.shortUrl = "http://www.amiami.com/top/detail/detail?gcode=" + (result.code = codeRegex.test(gcode) ? gcode.substr(0, gcode.lastIndexOf("-")) : gcode);
+        if (Config.blacklist.has(result.code)) continue;
+        result.url = "http://www.amiami.com/top/detail/detail?gcode=" + gcode;
         found = true;
       }
       if (price) {
@@ -256,14 +254,15 @@ View = {
     const selector = $(".selector");
     let current = selector, first = true;
     while (current = current.nextElementSibling) {
+      if (!current.dataset.title) continue;
       const { id } = current;
       View.lists[id] = current;
       const a = document.createElement("a");
       a.setAttribute("href", "#" + id);
       a.appendChild(new Text(current.dataset.title + " items list"));
-      if (!first) selector.appendChild(new Text(" | "));
+      if (!first) { selector.appendChild(new Text(" | ")); first = false; }
       selector.appendChild(a);
-      first = false;
+      current.insertAdjacentHTML("afterend", `<div class="top-title">${current.dataset.top}</div>`);
     }
     selector.addEventListener("click", View.selectorHandler);
     document.body.addEventListener("click", View.blacklistHandler);
@@ -274,45 +273,56 @@ View = {
     View.blacklist = new List("blacklist", View.scheme);
   },
   selectorHandler(e) {
-    if (e.target.tagName !== "A") return;
-    e.preventDefault();
-    const id = e.target.getAttribute("href").substr(1);
-    for (const [key, list] of entries(View.lists)) {
-      list.hidden = id !== key;
+    try {
+      if (e.target.tagName !== "A") return;
+      e.preventDefault();
+      const id = e.target.getAttribute("href").substr(1);
+      for (const [key, list] of entries(View.lists)) {
+        list.hidden = id !== key;
+      }
+      View.history.clear();
+      if (this.lastElementChild.dataset.rerender) {
+        View.historyRender();
+        this.lastElementChild.removeAttribute("data-rerender");
+      }
+      return false;
     }
-    View.history.clear();
-    if (this.lastElementChild.dataset.rerender) {
-      View.historyRender();
-      this.lastElementChild.removeAttribute("data-rerender");
-    }
-    return false;
+    catch(err) { console.error(err); }
   },
   blacklistHandler(e) {
-    if (
-      e.target.tagName !== "SPAN" ||
-      e.target.className !== "blacklist"
-    ) return;
-    e.preventDefault();
-    const code = e.target.parentNode.parentNode.dataset.code;
-    if (
-      $("body > #blacklist").hidden
-    ) {
-      const exampleItem = Config.local.get(code).values().next().value;
-      Config.blacklist.set(code, exampleItem);
-      View.blacklist.add(exampleItem);
-      View.list.remove("code", code);
-      View.new.remove("code", code);
-      View.deleted.remove("code", code);
+    try {
+      if (
+        e.target.tagName !== "SPAN" ||
+        e.target.className !== "blacklist"
+      ) return;
+      e.preventDefault();
+      const code = e.target.parentNode.parentNode.dataset.code;
+      if (
+        $("body > #blacklist").hidden
+      ) {
+        let exampleItem;
+        switch ($(".selector ~ div:not([hidden])").id) {
+          case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
+          case "new":       exampleItem = View.new.get("code", code); break;
+          case "deleted":   exampleItem = View.deleted.get("code", code); break;
+        }
+        Config.blacklist.set(code, exampleItem);
+        View.blacklist.add(exampleItem);
+        View.list.remove("code", code);
+        View.new.remove("code", code);
+        View.deleted.remove("code", code);
+      }
+      else {
+        const item = Config.blacklist.get(code);
+        Config.blacklist.delete(code);
+        View.blacklist.remove("code", code);
+        View.list.add(item);
+        View.list.sort("sort");
+      }
+      Config.set("blacklist", [...Config.blacklist]);
+      return false;
     }
-    else {
-      const item = Config.blacklist.get(code);
-      Config.blacklist.delete(code);
-      View.blacklist.remove("code", code);
-      View.list.add(item);
-      View.list.sort("sort");
-    }
-    Config.set("blacklist", [...Config.blacklist]);
-    return false;
+    catch(err) { console.error(err); }
   },
   add(item) {
     if (Config.remote.has(item.code)) Config.remote.get(item.code).set(item.fullCode, item);
@@ -329,17 +339,20 @@ View = {
     Config.set("items", Config.local);
   },
   historyDisplay(e) {
-    if (
-      e.target.tagName !== "A" ||
-      e.target.dataset.history !== "yes"
-    ) return;
-    e.preventDefault();
-    $(".selector").lastElementChild.dataset.rerender = "yes";
-    const pastEntry = Config.pastEntries[e.target.getAttribute("href").substr(1)];
-    const root = $("#history");
-    root.innerHTML = `<div id="new-history"><input type="text" class="fuzzy-search" /><ul class="pagination"></ul><ul class="list"></ul></div><div id="deleted-history"><input type="text" class="fuzzy-search" /><ul class="pagination"></ul><ul class="list"></ul></div>`;
-    (View.history.new = new List("new-history", View.historyScheme)).add(pastEntry.new);
-    (View.history.deleted = new List("deleted-history", View.historyScheme)).add(pastEntry.deleted);
+    try {
+      if (
+        e.target.tagName !== "A" ||
+        e.target.dataset.history !== "yes"
+      ) return;
+      e.preventDefault();
+      $(".selector").lastElementChild.dataset.rerender = "yes";
+      const pastEntry = Config.pastEntries[e.target.getAttribute("href").substr(1)];
+      const root = $("#history");
+      root.innerHTML = `<div id="new-history"><input type="text" class="fuzzy-search" /><ul class="pagination"></ul><ul class="list"></ul></div><div id="deleted-history"><input type="text" class="fuzzy-search" /><ul class="pagination"></ul><ul class="list"></ul></div>`;
+      (View.history.new = new List("new-history", View.historyScheme)).add(pastEntry.new);
+      (View.history.deleted = new List("deleted-history", View.historyScheme)).add(pastEntry.deleted);
+    }
+    catch(err) { console.error(err); }
   },
   historyRender() {
     const root = $("#history");
@@ -351,7 +364,7 @@ View = {
       const a = document.createElement("a");
       a.setAttribute("href", `#${++i}`);
       a.dataset.history = "yes";
-      a.appendChild(new Text(diff.date));
+      a.appendChild(new Text(`${diff.date} (new: ${diff.new.length}, deleted: ${diff.deleted.length})`));
       h1.appendChild(a);
       fragment.appendChild(h1);
     }
@@ -399,6 +412,9 @@ Main = {
       const items = [];
       for (const item of Config.blacklist.values()) {
         items.push(item);
+      }
+      for (const code of Config.blacklist.keys()) {
+        Config.local.delete(code);
       }
       View.blacklist.add(items);
     }
