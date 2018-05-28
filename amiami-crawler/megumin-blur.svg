@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 668 615" style="background: #333">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 668 615">
   <defs>
     <filter id="megu-blur">
       <feOffset in="SourceGraphic" dx="15" dy="15" result="corner" />
-      <feColorMatrix in="corner" type="matrix" values="0.4 0 0 0 0  0 0.4 0 0 0  0 0 0.4 0 0  0 0 0 1 0" result="matrix" />
+      <feColorMatrix in="corner" type="matrix" values="0.2 0 0 0 0  0 0.2 0 0 0  0 0 0.2 0 0  0 0 0 1 0" result="matrix" />
       <feGaussianBlur in="matrix" stdDeviation="10" />
     </filter>
   </defs>
