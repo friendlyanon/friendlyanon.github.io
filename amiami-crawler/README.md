@@ -4,7 +4,7 @@ Crawler for the preowned section of amiami.
 ## Install
 If you are using PaleMeme or similar older browser, this might not work for you.
 
-|   Uerscript    |     Link     |
+|   Userscript   |     Link     |
 | -------------- | ------------ |
 | AmiAmi Crawler | [Install][1] |
 
