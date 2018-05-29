@@ -321,6 +321,7 @@ View = {
         const idx = Number(e.target.previousElementSibling.getAttribute("href").substr(1));
         Config.pastEntries.splice(idx, 1);
         View.historyRender();
+        Config.set("history", Config.pastEntries);
         return false;
       }
       else {
