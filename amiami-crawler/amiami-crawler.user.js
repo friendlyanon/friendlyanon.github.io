@@ -303,6 +303,13 @@ View = {
         e.target.className !== "blacklist"
       ) return;
       e.preventDefault();
+      if (!$("body > #history").hidden) {
+        const idx = Number(e.target.previousElementSibling.getAttribute("href").substr(1));
+        Config.pastEntries.splice(idx, 1);
+        View.historyRender();
+        Config.set("history", Config.pastEntries);
+        return false;
+      }
       const code = e.target.parentNode.parentNode.dataset.code;
       if ($("body > #blacklist").hidden) {
         let exampleItem;
@@ -316,13 +323,6 @@ View = {
         try { View.list.remove("code", code); } catch(_) { /*  */ }
         try { View.new.remove("code", code); } catch(_) { /*  */ }
         try { View.deleted.remove("code", code); } catch(_) { /*  */ }
-      }
-      else if (!$("body > #history").hidden) {
-        const idx = Number(e.target.previousElementSibling.getAttribute("href").substr(1));
-        Config.pastEntries.splice(idx, 1);
-        View.historyRender();
-        Config.set("history", Config.pastEntries);
-        return false;
       }
       else {
         const item = Config.blacklist.get(code);
