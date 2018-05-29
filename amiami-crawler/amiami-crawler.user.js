@@ -263,7 +263,6 @@ View = {
       a.appendChild(new Text(current.dataset.title + " items list"));
       selector.appendChild(new Text(" | "));
       selector.appendChild(a);
-      current.insertAdjacentHTML("afterend", `<div class="top-title">${current.dataset.top}</div>`);
     }
     selector.firstChild.remove();
     selector.firstElementChild.className = "active";
@@ -360,7 +359,7 @@ View = {
       $(".selector").lastElementChild.dataset.rerender = "yes";
       const pastEntry = Config.pastEntries[e.target.getAttribute("href").substr(1)];
       const root = $("#history");
-      root.innerHTML = `<div id="new-history"><input type="text" class="fuzzy-search" /><ul class="pagination"></ul><ul class="list"></ul></div><div id="deleted-history"><input type="text" class="fuzzy-search" /><ul class="pagination"></ul><ul class="list"></ul></div>`;
+      root.innerHTML = `<div id="new-history">New:&nbsp;<input type="text" class="fuzzy-search" /><ul class="pagination"></ul><ul class="list"></ul></div><div id="deleted-history">Deleted:&nbsp;<input type="text" class="fuzzy-search" /><ul class="pagination"></ul><ul class="list"></ul></div>`;
       (View.history.new = new List("new-history", View.historyScheme)).add(pastEntry.new);
       (View.history.deleted = new List("deleted-history", View.historyScheme)).add(pastEntry.deleted);
     }
