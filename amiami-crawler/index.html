@@ -30,8 +30,11 @@ a {
   display: inline-block;
 }
 .url {
-  min-height: 80px;
-  min-width: 80px;
+  height: 80px;
+  width: 80px;
+  display: block;
+  overflow: hidden;
+  border-radius: 10px;
 }
 .list {
   display: grid;
@@ -48,6 +51,7 @@ a {
   background: #333 url(megumin-blur.svg) fixed right bottom no-repeat;
   background-size: auto 50vh;
   position: relative;
+  border-radius: 10px;
 }
 .item::before {
   content: "";
@@ -59,6 +63,7 @@ a {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
   z-index: 0;
+  border-radius: 10px;
 }
 .item > * {
   position: relative;
@@ -81,8 +86,8 @@ a {
   transform: translateX(-50%);
 }
 .item-icon {
-  width: 80px;
-  height: 80px;
+  min-width: 80px;
+  min-height: 80px;
 }
 .item-price {
   text-align: right;
@@ -123,7 +128,8 @@ div:not([hidden]) + .top-title {
   transform: translateX(-50%);
   border: 1px solid black;
   background: #222;
-  padding: 0 5px 5px;
+  padding: 0 8px 5px;
+  border-radius: 0 0 10px 10px;
 }
 </style>
 <script type="text/javascript">

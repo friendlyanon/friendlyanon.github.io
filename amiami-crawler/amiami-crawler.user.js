@@ -310,9 +310,9 @@ View = {
         }
         Config.blacklist.set(code, exampleItem);
         View.blacklist.add(exampleItem);
-        View.list.remove("code", code);
-        View.new.remove("code", code);
-        View.deleted.remove("code", code);
+        try { View.list.remove("code", code); } catch(_) { /*  */ }
+        try { View.new.remove("code", code); } catch(_) { /*  */ }
+        try { View.deleted.remove("code", code); } catch(_) { /*  */ }
       }
       else {
         const item = Config.blacklist.get(code);
