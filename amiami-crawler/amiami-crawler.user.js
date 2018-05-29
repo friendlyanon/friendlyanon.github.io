@@ -401,7 +401,7 @@ View = {
       { attr: "href", name: "shortUrl" },
       { attr: "src", name: "thumbnail" },
     ],
-    item: `<li class="item"><div class="item-top"><div class="item-icon"><a class="url"><img class="thumbnail" /></a></div><div class="item-name"><a class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><span class="blacklist">×</span><div class="item-price price"></div></div></li>`,
+    item: `<li class="item"><div class="item-top"><div class="item-icon"><a target="_blank" class="url"><img class="thumbnail" /></a></div><div class="item-name"><a target="_blank" class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><span class="blacklist">×</span><div class="item-price price"></div></div></li>`,
     page: 40,
     pagination: true
   },
@@ -414,7 +414,7 @@ Main = {
     });
     View.init();
     (View.historyScheme = assign({}, View.scheme)).page = 15;
-    View.historyScheme.item = `<li class="item"><div class="item-top"><div class="item-icon"><a class="url"><img class="thumbnail" /></a></div><div class="item-name"><a class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><div class="item-price price"></div></div></li>`;
+    View.historyScheme.item = `<li class="item"><div class="item-top"><div class="item-icon"><a target="_blank" class="url"><img class="thumbnail" /></a></div><div class="item-name"><a target="_blank" class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><div class="item-price price"></div></div></li>`;
     localforage.config({ name: "amiamicrawler" });
     localforage.setDriver(localforage.INDEXEDDB);
     const interval = await Config.get("interval");
