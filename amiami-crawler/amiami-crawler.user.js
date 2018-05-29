@@ -378,6 +378,10 @@ View = {
       a.dataset.history = "yes";
       a.appendChild(new Text(`${diff.date} (new: ${diff.new.length}, deleted: ${diff.deleted.length})`));
       h1.appendChild(a);
+      const blacklist = document.createElement("span");
+      blacklist.className = "blacklist";
+      blacklist.textContent = "×";
+      h1.appendChild(blacklist);
       fragment.appendChild(h1);
     }
     root.appendChild(fragment);
