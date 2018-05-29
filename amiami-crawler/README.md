@@ -2,7 +2,18 @@
 Crawler for the preowned section of amiami.
 
 ## Install
-If you are using PaleMeme or similar older browser, this might not work for you.
+You need a userscript manager addon for your browser to use this.
+
+| Browser | Addon |
+| ------- | ----- |
+| Firefox | [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) / [Violentmonkey](https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/) |
+| Seamonkey | [Greasemonkey](https://sourceforge.net/projects/gmport/) |
+| Pale Moon | [Greasemonkey](https://github.com/janekptacijarabaci/greasemonkey/releases/latest) |
+| Chrome/Chromium based | [Violentmonkey](https://chrome.google.com/webstore/detail/violent-monkey/jinjaccalgkegednnccohejagnlnfdag) (for [Opera](https://addons.opera.com/en/extensions/details/violent-monkey/)) / [Tampermonkey](https://tampermonkey.net/) |
+| Safari | [JS Blocker](http://jsblocker.toggleable.com/) / [Tampermonkey](https://tampermonkey.net/) |
+| Microsoft Edge | [Tampermonkey](https://www.microsoft.com/en-us/store/p/tampermonkey/9nblggh5162s) |
+
+After that install the crawler:
 
 |   Userscript   |     Link     |
 | -------------- | ------------ |
