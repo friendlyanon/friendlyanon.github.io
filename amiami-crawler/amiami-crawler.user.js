@@ -3,7 +3,7 @@
 // @description Crawler for AmiAmi preowned section
 // @namespace   friendlyanon
 // @include     https://friendlyanon.github.io/amiami-crawler/
-// @version     2
+// @version     3
 // @require     https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.js
 // @require     https://cdn.rawgit.com/mozilla/localForage/master/dist/localforage.js
 // @grant       GM_xmlhttpRequest
@@ -266,6 +266,7 @@ View = {
       current.insertAdjacentHTML("afterend", `<div class="top-title">${current.dataset.top}</div>`);
     }
     selector.firstChild.remove();
+    selector.firstElementChild.className = "active";
     selector.addEventListener("click", View.selectorHandler);
     document.body.addEventListener("click", View.blacklistHandler);
     $("#history").addEventListener("click", View.historyDisplay);
@@ -279,6 +280,10 @@ View = {
       if (e.target.tagName !== "A") return;
       e.preventDefault();
       const id = e.target.getAttribute("href").substr(1);
+      for (const child of e.target.parentNode.children) {
+        if (child === e.target) child.className = "active";
+        else child.removeAttribute("class");
+      }
       for (const [key, list] of entries(View.lists)) {
         list.hidden = id !== key;
       }
@@ -299,9 +304,7 @@ View = {
       ) return;
       e.preventDefault();
       const code = e.target.parentNode.parentNode.dataset.code;
-      if (
-        $("body > #blacklist").hidden
-      ) {
+      if ($("body > #blacklist").hidden) {
         let exampleItem;
         switch ($(".selector ~ div[data-title]:not([hidden])").id) {
           case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
@@ -313,6 +316,12 @@ View = {
         try { View.list.remove("code", code); } catch(_) { /*  */ }
         try { View.new.remove("code", code); } catch(_) { /*  */ }
         try { View.deleted.remove("code", code); } catch(_) { /*  */ }
+      }
+      else if (!$("body > #history").hidden) {
+        const idx = Number(e.target.previousElementSibling.getAttribute("href").substr(1));
+        Config.pastEntries.splice(idx, 1);
+        View.historyRender();
+        return false;
       }
       else {
         const item = Config.blacklist.get(code);
