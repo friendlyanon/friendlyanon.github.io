@@ -373,7 +373,7 @@ View = {
       blacklist.className = "blacklist";
       blacklist.textContent = "×";
       h1.appendChild(blacklist);
-      fragment.appendChild(h1);
+      fragment.prepend(h1);
     }
     root.appendChild(fragment);
   },
