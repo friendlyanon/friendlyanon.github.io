@@ -142,7 +142,6 @@ Pages = {
     xhr.send();
   },
   afterReq() {
-    console.log(this.response);
     const products = $$(".product_box", this.response);
     if (!products.length) {
       View.spinnerEnd();
@@ -252,7 +251,7 @@ View = {
     }
     fragment.firstChild.remove();
     setTimeout(() => {
-      if (selector.firstElementChild.className === "active") {
+      if (selector.children.length > 0) {
         return selector.classList.add("userjs");
       }
       selector.appendChild(fragment);
