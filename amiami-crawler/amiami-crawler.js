@@ -141,9 +141,9 @@ Pages = {
     $(".loading span").textContent = Pages.current;
     xhr.send();
   },
-  afterReq({ response: doc }) {
-    console.log(this);
-    const products = $$(".product_box", doc);
+  afterReq() {
+    console.log(this.response);
+    const products = $$(".product_box", this.response);
     if (!products.length) {
       View.spinnerEnd();
       return View.display();
@@ -253,13 +253,11 @@ View = {
     fragment.firstChild.remove();
     setTimeout(() => {
       if (selector.firstElementChild.className === "active") {
-        selector.classList.add("userjs");
+        return selector.classList.add("userjs");
       }
-      else {
-        selector.firstElementChild.className = "active";
-      }
-    }, 500);
-    selector.appendChild(fragment);
+      selector.appendChild(fragment);
+      selector.firstElementChild.className = "active";
+    }, 1500);
     selector.addEventListener("click", View.selectorHandler);
     document.body.addEventListener("click", View.blacklistHandler);
     $("#history").addEventListener("click", View.historyDisplay);
