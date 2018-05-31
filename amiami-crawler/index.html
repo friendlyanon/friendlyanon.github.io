@@ -149,8 +149,8 @@ div[data-top]:not([hidden])::after {
   background: #1b1b1b;
   border-bottom: 1px solid #888;
 }
-.selector::after {
-  content: "This page will soon change to using a service that doesn't require anything to install. Stay tuned!";
+.selector.userjs::after {
+  content: "Please uninstall the AmiAmi Crawler userscript!       ";
   float: right;
 }
 a.active::before {
@@ -166,13 +166,7 @@ h1 .blacklist {
 }
 /* ]]> */
 </style>
-<script type="text/javascript">
-// <![CDATA[
-setTimeout(function() {
-  if (!window.crawler) window.location = "https://github.com/friendlyanon/friendlyanon.github.io/tree/master/amiami-crawler";
-}, 1500)
-// ]]>
-</script>
+
 </head>
 <body>
 <div class="selector"></div>
@@ -197,5 +191,8 @@ setTimeout(function() {
   <ul class="list"></ul>
 </div>
 <div id="history" data-title="Past diffs'" data-top="History" hidden></div>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/mozilla/localForage/master/dist/localforage.js"></script>
+<script type="text/javascript" src="amiami-crawler.js"></script>
 </body>
 </html>
