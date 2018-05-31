@@ -8,7 +8,6 @@ let Pages, Parser, Main, View, Config;
 const { setPrototypeOf, assign, entries } = Object;
 const { isArray } = Array;
 
-const domparser = new DOMParser;
 const queryString = (() => {
   class NullProto {}
   setPrototypeOf(NullProto.prototype, null);
@@ -136,33 +135,29 @@ Pages = {
       onload: Pages.afterReq,
       onerror: console.error,
       onabort: console.error,
-      ontimeout: console.error
+      ontimeout: console.error,
+      responseType: "document"
     });
     $(".loading span").textContent = Pages.current;
     xhr.send();
   },
   afterReq({ response: doc }) {
-    try {
-      doc = domparser.parseFromString(doc, "text/html");
-      const products = $$(".product_box", doc);
-      if (!products.length) {
-        View.spinnerEnd();
-        return View.display();
-      }
-      for (const product of products) {
-        const thumbnail = $(".product_img img", product);
-        const name = $(".product_name_list a", product);
-        const price = $(".product_price", product);
-        const deal = $(".product_off", product);
-        Parser.products.push({ thumbnail, name, price, deal, sort: ++Pages.sort });
-        Parser.check();
-      }
-      if (!Config.interval) Pages.req();
-      else setTimeout(Pages.req, Config.interval);
+    console.log(this);
+    const products = $$(".product_box", doc);
+    if (!products.length) {
+      View.spinnerEnd();
+      return View.display();
     }
-    catch (err) {
-      console.error(err);
+    for (const product of products) {
+      const thumbnail = $(".product_img img", product);
+      const name = $(".product_name_list a", product);
+      const price = $(".product_price", product);
+      const deal = $(".product_off", product);
+      Parser.products.push({ thumbnail, name, price, deal, sort: ++Pages.sort });
+      Parser.check();
     }
+    if (!Config.interval) Pages.req();
+    else setTimeout(Pages.req, Config.interval);
   },
 };
 
@@ -257,11 +252,11 @@ View = {
     }
     fragment.firstChild.remove();
     setTimeout(() => {
-      if (fragment.firstElementChild.className === "active") {
+      if (selector.firstElementChild.className === "active") {
         selector.classList.add("userjs");
       }
       else {
-        fragment.firstElementChild.className = "active";
+        selector.firstElementChild.className = "active";
       }
     }, 500);
     selector.appendChild(fragment);
