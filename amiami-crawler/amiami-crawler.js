@@ -79,7 +79,6 @@ Config = {
     View.historyRender();
   },
   async set(key, value) {
-    mapsetcheck:
     if (
       value != null &&
       typeof value === "object"
@@ -91,15 +90,12 @@ Config = {
        case Set:
         value = { type: "Set", data: [...value] };
         break;
-       default:
-        break mapsetcheck;
       }
     }
     return await localforage.setItem(key, value);
   },
   async get(key) {
     const entry = await localforage.getItem(key);
-    mapsetcheck:
     if (
       entry != null &&
       typeof entry === "object"
@@ -109,8 +105,6 @@ Config = {
         return new Set(entry.data);
        case "Map":
         return toValues(new Map, entry.data);
-       default:
-        break mapsetcheck;
       }
     }
     return entry;
@@ -394,7 +388,7 @@ View = {
     ],
     item: `<li class="item"><div class="item-top"><div class="item-icon"><a target="_blank" class="url"><img class="thumbnail" /></a></div><div class="item-name"><a target="_blank" class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><span class="blacklist">×</span><div class="item-price price"></div></div></li>`,
     page: 40,
-    pagination: true
+    pagination: [{ outerWindow: 1 }],
   },
 };
 
