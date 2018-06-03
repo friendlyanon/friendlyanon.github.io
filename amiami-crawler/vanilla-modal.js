@@ -111,14 +111,16 @@ class VanillaModal {
       return;
     }
     if (typeof onbeforeopen === "function") {
-      onbeforeopen.call(this, e);
+      try { onbeforeopen.call(this, e); }
+      catch (err) { console.error(err); }
     }
     this.captureNode(this.current);
     page.classList.add(this.settings.class);
     page.setAttribute("data-current-modal", this.current.id || "anonymous");
     this.isOpen = true;
     if (typeof onopen === "function") {
-      onopen.call(this, e);
+      try { onopen.call(this, e); }
+      catch (err) { console.error(err); }
     }
   }
 
@@ -135,7 +137,8 @@ class VanillaModal {
     } = this.settings;
     this.isOpen = false;
     if (typeof onbeforeclose === "function") {
-      onbeforeclose.call(this, e);
+      try { onbeforeclose.call(this, e); }
+      catch (err) { console.error(err); }
     }
     this.dom.page.classList.remove(this.settings.class);
     if (
@@ -157,7 +160,8 @@ class VanillaModal {
     this.isOpen = false;
     this.current = null;
     if (typeof onclose === "function") {
-      onclose.call(this, e);
+      try { onclose.call(this, e); }
+      catch (err) { console.error(err); }
     }
   }
 
@@ -169,17 +173,11 @@ class VanillaModal {
   }
 
   captureNode(node) {
-    const { modalContent } = this.dom;
-    while (node.childNodes.length) {
-      modalContent.appendChild(node.childNodes[0]);
-    }
+    if (node) this.dom.modalContent.prepend(...node.childNodes);
   }
 
   releaseNode(node) {
-    const { modalContent } = this.dom;
-    while (modalContent.childNodes.length) {
-      node.appendChild(modalContent.childNodes[0]);
-    }
+    if (node) node.prepend(...this.dom.modalContent.childNodes);
   }
 
   closeKeyHandler(e) {
