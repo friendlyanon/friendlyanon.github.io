@@ -264,6 +264,7 @@ View = {
     selector.firstElementChild.className = "active";
   },
   firstClose() {
+    View.modal.settings.onclose = null;
     Config.set("notfirst", true);
     Pages.main();
   },
