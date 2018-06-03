@@ -262,13 +262,7 @@ View = {
     View.new = new List("new", View.scheme);
     View.deleted = new List("deleted", View.scheme);
     View.blacklist = new List("blacklist", View.scheme);
-    View.modal = new VanillaModal({
-      modal: ".modal",
-      modalInner: ".modal-inner",
-      modalContent: ".modal-content",
-      open: "[data-modal-open]",
-      close: "[data-modal-close]",
-    });
+    View.modal = new VanillaModal;
   },
   selectorHandler(e) {
     try {
