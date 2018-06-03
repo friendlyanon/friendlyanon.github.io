@@ -136,6 +136,7 @@ Pages = {
     xhr.send();
   },
   afterReq() {
+    if (Pages.pageunloaded) return;
     const products = $$(".product_box", this.response);
     if (!products.length) {
       View.spinnerEnd();
@@ -151,6 +152,9 @@ Pages = {
     }
     if (!Config.interval) Pages.req();
     else setTimeout(Pages.req, Config.interval);
+  },
+  unload() {
+    Pages.pageunloaded = true;
   },
 };
 
@@ -428,5 +432,6 @@ Main = {
 };
 
 document.addEventListener("DOMContentLoaded", Main.init, { once: true });
+window.addEventListener("beforeunload", Pages.unload, { once: true });
 
 }());
