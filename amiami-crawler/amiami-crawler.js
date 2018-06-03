@@ -7,6 +7,7 @@
 let Pages, Parser, Main, View, Config;
 const { setPrototypeOf, assign, entries } = Object;
 const { isArray } = Array;
+const { max } = Math;
 
 const queryString = (() => {
   class NullProto {}
@@ -235,6 +236,17 @@ View = {
   },
   init() {
     const selector = $(".selector");
+    View.populateHeader(selector);
+    selector.addEventListener("click", View.selectorHandler);
+    document.body.addEventListener("click", View.blacklistHandler);
+    $("#history").addEventListener("click", View.historyDisplay);
+    View.list = new List("full-list", View.scheme);
+    View.new = new List("new", View.scheme);
+    View.deleted = new List("deleted", View.scheme);
+    View.blacklist = new List("blacklist", View.scheme);
+    View.modal = new VanillaModal;
+  },
+  populateHeader(selector) {
     let current = selector;
     const fragment = document.createDocumentFragment();
     while (current = current.nextElementSibling) {
@@ -248,26 +260,18 @@ View = {
       fragment.appendChild(a);
     }
     fragment.firstChild.remove();
-    setTimeout(() => {
-      if (selector.children.length > 0) {
-        return selector.classList.add("userjs");
-      }
-      selector.appendChild(fragment);
-      selector.firstElementChild.className = "active";
-    }, 1500);
-    selector.addEventListener("click", View.selectorHandler);
-    document.body.addEventListener("click", View.blacklistHandler);
-    $("#history").addEventListener("click", View.historyDisplay);
-    View.list = new List("full-list", View.scheme);
-    View.new = new List("new", View.scheme);
-    View.deleted = new List("deleted", View.scheme);
-    View.blacklist = new List("blacklist", View.scheme);
-    View.modal = new VanillaModal;
+    selector.prepend(fragment);
+    selector.firstElementChild.className = "active";
+  },
+  firstClose() {
+    Config.set("notfirst", true);
+    Pages.main();
   },
   selectorHandler(e) {
     try {
       if (e.target.tagName !== "A") return;
       e.preventDefault();
+      if (e.target.parentNode.tagName === "SPAN") return View.modal.open(e.target.getAttribute("href"));
       const id = e.target.getAttribute("href").substr(1);
       for (const child of e.target.parentNode.children) {
         if (child === e.target) child.className = "active";
@@ -408,7 +412,7 @@ Main = {
   },
   async main() {
     const interval = await Config.get("interval");
-    if (typeof interval === "number") Config.interval = interval;
+    if (typeof interval === "number") Config.interval = max(interval, 0);
     const previous = await Config.get("items");
     if (previous instanceof Map) Config.local = previous;
     const blacklist = await Config.get("blacklist");
@@ -428,7 +432,11 @@ Main = {
       Config.pastEntries = JSON.parse(JSON.stringify(history));
       View.historyRender();
     }
-    Pages.main();
+    if (await Config.get("notfirst")) Pages.main();
+    else {
+      View.modal.settings.onclose = View.firstClose;
+      View.modal.open("#modal_about");
+    }
   },
 };
 

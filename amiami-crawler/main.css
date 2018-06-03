@@ -117,8 +117,12 @@ a {
   padding: 50px 10px 0;
   margin-top: -5px;
 }
-.selector > a {
+.selector a {
   position: relative;
+  display: inline-block;
+}
+.selector > span {
+  float: right;
   display: inline-block;
 }
 .selector {
@@ -129,10 +133,7 @@ a {
   position: fixed;
   top: 0;
   z-index: 2;
-}
-.selector.userjs::after {
-  content: "Please uninstall the AmiAmi Crawler userscript!       ";
-  float: right;
+  box-sizing: border-box;
 }
 .active::before {
   position: absolute;
