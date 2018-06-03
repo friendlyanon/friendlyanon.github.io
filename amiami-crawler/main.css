@@ -171,6 +171,8 @@ h1 .blacklist {
   white-space: normal;
   vertical-align: middle;
   text-align: left;
+  width: 40%;
+  min-width: 400px;
 }
 .vanilla-modal .modal:before {
   display: inline-block;
