@@ -163,8 +163,13 @@ Parser = {
     Parser.parsing = true;
     Parser.parseProducts().catch(console.error);
   },
+  asyncAdder() {
+    View.add(this.shift());
+  },
   async parseProducts() {
     const { products, codeRegex } = Parser;
+    const results = [];
+    const adder = Parser.asyncAdder.bind(results);
     while(products.length) {
       const { thumbnail, name, price, deal, sort } = products.shift();
       const result = {
@@ -201,7 +206,8 @@ Parser = {
         found = true;
       }
       if (found) {
-        View.add(result);
+        results.push(result);
+        requestAnimationFrame(adder);
       }
       else {
         console.log("skipped %s", name);
@@ -393,12 +399,15 @@ View = {
 };
 
 Main = {
-  async init() {
+  init() {
     View.init();
     (View.historyScheme = assign({}, View.scheme)).page = 15;
     View.historyScheme.item = `<li class="item"><div class="item-top"><div class="item-icon"><a target="_blank" class="url"><img class="thumbnail" /></a></div><div class="item-name"><a target="_blank" class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><div class="item-price price"></div></div></li>`;
     localforage.config({ name: "amiamicrawler" });
     localforage.setDriver(localforage.INDEXEDDB);
+    Main.main().catch(console.error);
+  },
+  async main() {
     const interval = await Config.get("interval");
     if (typeof interval === "number") Config.interval = interval;
     const previous = await Config.get("items");
@@ -424,6 +433,6 @@ Main = {
   },
 };
 
-Main.init().catch(console.error);
+document.addEventListener("DOMContentLoaded", Main.init, { once: true });
 
 }());
