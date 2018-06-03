@@ -1,5 +1,6 @@
 (function() {
 "use strict";
+const { isArray } = Array;
 
 const defaults = {
   modal: ".modal",
