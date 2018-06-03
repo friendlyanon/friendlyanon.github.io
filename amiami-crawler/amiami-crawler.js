@@ -163,13 +163,8 @@ Parser = {
     Parser.parsing = true;
     Parser.parseProducts().catch(console.error);
   },
-  asyncAdder() {
-    View.add(this.shift());
-  },
   async parseProducts() {
     const { products, codeRegex } = Parser;
-    const results = [];
-    const adder = Parser.asyncAdder.bind(results);
     while(products.length) {
       const { thumbnail, name, price, deal, sort } = products.shift();
       const result = {
@@ -206,8 +201,7 @@ Parser = {
         found = true;
       }
       if (found) {
-        results.push(result);
-        requestAnimationFrame(adder);
+        View.add(result);
       }
       else {
         console.log("skipped %s", name);
