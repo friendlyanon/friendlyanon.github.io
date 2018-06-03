@@ -1,4 +1,6 @@
+/* eslint-disable strict */
 (function() {
+
 "use strict";
 const { isArray } = Array;
 
@@ -15,10 +17,10 @@ const defaults = {
   closeKeys: [27],
   transitions: true,
   transitionEnd: null,
-  onBeforeOpen: null,
-  onBeforeClose: null,
-  onOpen: null,
-  onClose: null,
+  onbeforeopen: null,
+  onbeforeclose: null,
+  onopen: null,
+  onclose: null,
 };
 
 function throwError(message) {
@@ -71,67 +73,52 @@ function matches(e, selector) {
   return null;
 }
 
+function getDomNodes(settings) {
+  const {
+    modal,
+    page,
+    modalInner,
+    modalContent,
+  } = settings;
+  return {
+    modal: getNode(modal),
+    page: getNode(page),
+    modalInner: getNode(modalInner, getNode(modal)),
+    modalContent: getNode(modalContent, getNode(modal)),
+  };
+}
+
 class VanillaModal {
   constructor(settings) {
-    this.isOpen = false;
-    this.current = null;
+    this.isOpen =
     this.isListening = false;
+    this.current = null;
     this.listeners = [];
 
-    this.settings = applyUserSettings(settings);
-    this.dom = this.getDomNodes();
+    this.dom = getDomNodes(this.settings = applyUserSettings(settings));
 
-    this.addLoadedCssClass();
-    this.listen();
-  }
-
-  getDomNodes() {
-    const {
-      modal,
-      page,
-      modalInner,
-      modalContent,
-    } = this.settings;
-    return {
-      modal: getNode(modal),
-      page: getNode(page),
-      modalInner: getNode(modalInner, getNode(modal)),
-      modalContent: getNode(modalContent, getNode(modal)),
-    };
-  }
-
-  addLoadedCssClass() {
     this.dom.page.classList.add(this.settings.loadClass);
-  }
-
-  setOpenId(id) {
-    const { page } = this.dom;
-    page.setAttribute("data-current-modal", id || "anonymous");
-  }
-
-  removeOpenId() {
-    const { page } = this.dom;
-    page.removeAttribute("data-current-modal");
+    this.listen();
   }
 
   open(allMatches, e) {
     const { page } = this.dom;
-    const { onBeforeOpen, onOpen } = this.settings;
+    const { onbeforeopen, onopen } = this.settings;
     this.releaseNode(this.current);
     this.current = getElementContext(allMatches);
     if (!(this.current instanceof HTMLElement)) {
       throwError("VanillaModal target must exist on page.");
       return;
     }
-    if (typeof onBeforeOpen === "function") {
-      onBeforeOpen.call(this, e);
+    if (typeof onbeforeopen === "function") {
+      onbeforeopen.call(this, e);
     }
     this.captureNode(this.current);
     page.classList.add(this.settings.class);
-    this.setOpenId(this.current.id);
+    page.setAttribute("data-current-modal", this.current.id || "anonymous");
     this.isOpen = true;
-    if (typeof onOpen === "function") {
-      onOpen.call(this, e);
+    if (typeof onopen === "function") {
+      onopen.call(this, e);
     }
   }
 
@@ -140,33 +127,37 @@ class VanillaModal {
   }
 
   close(e) {
+    if (!this.isOpen) return;
     const {
       transitions,
       transitionEnd,
-      onBeforeClose,
+      onbeforeclose,
     } = this.settings;
-    if (this.isOpen) {
-      this.isOpen = false;
-      if (typeof onBeforeClose === "function") {
-        onBeforeClose.call(this, e);
-      }
-      this.dom.page.classList.remove(this.settings.class);
-      if (transitions && transitionEnd && this.hasTransition) {
-        this.closeModalWithTransition(e);
-      } else {
-        this.closeModal(e);
-      }
+    this.isOpen = false;
+    if (typeof onbeforeclose === "function") {
+      onbeforeclose.call(this, e);
+    }
+    this.dom.page.classList.remove(this.settings.class);
+    if (
+      transitions &&
+      transitionEnd &&
+      this.hasTransition
+    ) {
+      this.closeModalWithTransition(e);
+    }
+    else {
+      this.closeModal(e);
     }
   }
 
   closeModal(e) {
-    const { onClose } = this.settings;
-    this.removeOpenId(this.dom.page);
+    const { onclose } = this.settings;
+    this.dom.page.removeAttribute("data-current-modal");
     this.releaseNode(this.current);
     this.isOpen = false;
     this.current = null;
-    if (typeof onClose === "function") {
-      onClose.call(this, e);
+    if (typeof onclose === "function") {
+      onclose.call(this, e);
     }
   }
 
@@ -197,7 +188,7 @@ class VanillaModal {
       isArray(closeKeys) &&
       closeKeys.length &&
       closeKeys.indexOf(e.which) > -1 &&
-      this.isOpen === true
+      this.isOpen
     ) {
       e.preventDefault();
       this.close(e);
@@ -206,13 +197,15 @@ class VanillaModal {
 
   outsideClickHandler(e) {
     const { clickOutside } = this.settings;
-    const { modalInner } = this.dom;
     if (clickOutside) {
       const { body } = document;
+      const { modalInner } = this.dom;
       let node = e.target;
-      while (node && node !== body) {
-        if (node === modalInner) {
-          return;
+      whileLoop:
+      while (node) {
+        switch (node) {
+          case body: break whileLoop;
+          case modalInner: return;
         }
         node = node.parentNode;
       }
@@ -245,7 +238,8 @@ class VanillaModal {
       document.addEventListener("click", listeners[listeners.push(e => this.delegateOpen(e)) - 1], false);
       document.addEventListener("click", listeners[listeners.push(e => this.delegateClose(e)) - 1], false);
       this.isListening = true;
-    } else {
+    }
+    else {
       throwError("Event listeners already applied.");
     }
   }
@@ -259,7 +253,8 @@ class VanillaModal {
       document.removeEventListener("keydown", listeners.pop());
       modal.removeEventListener("click", listeners.pop());
       this.isListening = false;
-    } else {
+    }
+    else {
       throwError("Event listeners already removed.");
     }
   }

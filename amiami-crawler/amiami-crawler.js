@@ -1,4 +1,4 @@
-/* global List, localforage */
+/* global List, localforage, VanillaModal */
 /* eslint-disable no-cond-assign, strict */
 (function() {
 
@@ -262,6 +262,13 @@ View = {
     View.new = new List("new", View.scheme);
     View.deleted = new List("deleted", View.scheme);
     View.blacklist = new List("blacklist", View.scheme);
+    View.modal = new VanillaModal({
+      modal: ".modal",
+      modalInner: ".modal-inner",
+      modalContent: ".modal-content",
+      open: "[data-modal-open]",
+      close: "[data-modal-close]",
+    });
   },
   selectorHandler(e) {
     try {
@@ -430,6 +437,8 @@ Main = {
     Pages.main();
   },
 };
+
+window.__$debug$ = { Pages, Parser, Main, View, Config };
 
 document.addEventListener("DOMContentLoaded", Main.init, { once: true });
 window.addEventListener("beforeunload", Pages.unload, { once: true });
