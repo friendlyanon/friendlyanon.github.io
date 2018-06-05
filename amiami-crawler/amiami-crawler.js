@@ -43,6 +43,7 @@ function toValues(map, items) {
 Config = {
   local: new Map,
   remote: new Map,
+  wishlist: new Set,
   changed: {
     new: [],
     deleted: [],
@@ -240,10 +241,12 @@ View = {
     selector.addEventListener("click", View.selectorHandler);
     document.body.addEventListener("click", View.blacklistHandler);
     $("#history").addEventListener("click", View.historyDisplay);
-    View.list = new List("full-list", View.scheme);
-    View.new = new List("new", View.scheme);
-    View.deleted = new List("deleted", View.scheme);
-    View.blacklist = new List("blacklist", View.scheme);
+    const { scheme } = View;
+    View.list = new List("full-list", scheme);
+    View.new = new List("new", scheme);
+    View.deleted = new List("deleted", scheme);
+    View.blacklist = new List("blacklist", scheme);
+    View.wishlist = new List("wishlist", scheme);
     View.modal = new VanillaModal;
   },
   populateHeader(selector) {
@@ -290,6 +293,9 @@ View = {
     }
     catch(err) { console.error(err); }
   },
+  wishlistHandler(e) {
+    
+  },
   blacklistHandler(e) {
     try {
       if (
@@ -305,6 +311,12 @@ View = {
         return false;
       }
       const code = e.target.parentNode.parentNode.dataset.code;
+      if (!$("body > #wishlist").hidden) {
+        Config.wishlist.delete(code);
+        View.wishlist.remove("code", code);
+        Config.set("wishlist", Config.wishlist);
+        return false;
+      }
       if ($("body > #blacklist").hidden) {
         let exampleItem;
         switch ($(".selector ~ div[data-title]:not([hidden])").id) {
@@ -331,9 +343,11 @@ View = {
     catch(err) { console.error(err); }
   },
   add(item) {
-    if (Config.remote.has(item.code)) Config.remote.get(item.code).set(item.fullCode, item);
-    else Config.remote.set(item.code, new Map().set(item.fullCode, item));
+    const { code } = item;
+    if (Config.remote.has(code)) Config.remote.get(code).set(item.fullCode, item);
+    else Config.remote.set(code, new Map().set(item.fullCode, item));
     View.list.add(item);
+    if (Config.wishlist.has(code)) View.wishlist.add(item);
   },
   display() {
     Config.filter();
@@ -416,6 +430,8 @@ Main = {
     if (typeof interval === "number") Config.interval = max(interval, 0);
     const previous = await Config.get("items");
     if (previous instanceof Map) Config.local = previous;
+    const wishlist = await Config.get("wishlist");
+    if (wishlist instanceof Set) Config.wishlist = wishlist;
     const blacklist = await Config.get("blacklist");
     if (isArray(blacklist)) {
       Config.blacklist = new Map(blacklist);
