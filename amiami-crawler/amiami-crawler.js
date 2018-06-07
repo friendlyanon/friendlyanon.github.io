@@ -241,6 +241,7 @@ View = {
     View.populateHeader(selector);
     selector.addEventListener("click", View.selectorHandler);
     document.body.addEventListener("click", View.blacklistHandler);
+    document.body.addEventListener("click", View.wishlistHandler);
     $("#history").addEventListener("click", View.historyDisplay);
     const { scheme } = View;
     View.list = new List("full-list", scheme);
@@ -307,8 +308,8 @@ View = {
       let exampleItem;
       switch (View.currentId) {
         case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
-        case "new":       exampleItem = View.new.get("code", code); break;
-        case "deleted":   exampleItem = View.deleted.get("code", code); break;
+        case "new":       exampleItem = View.new.get("code", code)[0]; break;
+        case "deleted":   exampleItem = View.deleted.get("code", code)[0]; break;
       }
       View.wishlist.add(exampleItem);
       Config.set("wishlist", Config.wishlist.add(code));
@@ -341,8 +342,8 @@ View = {
         let exampleItem;
         switch (View.currentId) {
           case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
-          case "new":       exampleItem = View.new.get("code", code); break;
-          case "deleted":   exampleItem = View.deleted.get("code", code); break;
+          case "new":       exampleItem = View.new.get("code", code)[0]; break;
+          case "deleted":   exampleItem = View.deleted.get("code", code)[0]; break;
         }
         Config.blacklist.set(code, exampleItem);
         View.blacklist.add(exampleItem);
