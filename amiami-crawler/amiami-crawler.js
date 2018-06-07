@@ -369,6 +369,11 @@ View = {
     else Config.remote.set(code, new Map().set(item.fullCode, item));
     View.list.add(item);
     if (Config.wishlist.has(code)) View.wishlist.add(item);
+    else for (const wish of Config.wishlist) {
+      if (!item.name.toLowerCase().includes(wish.toLowerCase())) continue;
+      View.wishlist.add(item);
+      break;
+    }
   },
   display() {
     Config.filter();
