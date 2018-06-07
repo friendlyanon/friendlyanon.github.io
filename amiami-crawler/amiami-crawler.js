@@ -5,18 +5,18 @@
 "use strict";
 
 let Pages, Parser, Main, View, Config;
-const { setPrototypeOf, assign, entries } = Object;
+const { create, assign, entries } = Object;
 const { isArray } = Array;
 const { max } = Math;
 
 const queryString = (() => {
-  class NullProto {}
-  setPrototypeOf(NullProto.prototype, null);
+  function NullProto() {}
+  NullProto.prototype = create(null);
   const plusRegex = /\+/g;
   return str => {
     const ret = new NullProto;
-    switch (str.charAt()) {
-      case "#": case "&": case "?": str = str.substr(1); break;
+    switch (str.charCodeAt()) {
+      case 35: case 38: case 63: str = str.substr(1); break;
     }
     for (const param of str.split("&")) {
       const [key, value] = param.replace(plusRegex, " ").split("=");
@@ -111,6 +111,7 @@ Config = {
     }
     return entry;
   },
+  settings: {},
   interval: 100,
   pastEntries: [],
 };
@@ -265,6 +266,7 @@ View = {
     fragment.firstChild.remove();
     selector.prepend(fragment);
     selector.firstElementChild.className = "active";
+    View.currentId = selector.firstElementChild.id;
   },
   firstClose() {
     View.modal.settings.onclose = null;
@@ -281,6 +283,7 @@ View = {
         if (child === e.target) child.className = "active";
         else child.removeAttribute("class");
       }
+      View.currentId = id;
       for (const [key, list] of entries(View.lists)) {
         list.hidden = id !== key;
       }
@@ -294,7 +297,24 @@ View = {
     catch(err) { console.error(err); }
   },
   wishlistHandler(e) {
-    
+    try {
+      if (
+        e.target.tagName !== "SPAN" ||
+        e.target.className !== "wishlist"
+      ) return;
+      e.preventDefault();
+      const { code } = e.target.parentNode.parentNode.parentNode.dataset;
+      let exampleItem;
+      switch (View.currentId) {
+        case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
+        case "new":       exampleItem = View.new.get("code", code); break;
+        case "deleted":   exampleItem = View.deleted.get("code", code); break;
+      }
+      View.wishlist.add(exampleItem);
+      Config.set("wishlist", Config.wishlist.add(code));
+      return false;
+    }
+    catch(err) { console.error(err); }
   },
   blacklistHandler(e) {
     try {
@@ -303,23 +323,23 @@ View = {
         e.target.className !== "blacklist"
       ) return;
       e.preventDefault();
-      if (!$("body > #history").hidden) {
+      if (View.currentId === "history") {
         const idx = Number(e.target.previousElementSibling.getAttribute("href").substr(1));
         Config.pastEntries.splice(idx, 1);
         View.historyRender();
         Config.set("history", Config.pastEntries);
         return false;
       }
-      const code = e.target.parentNode.parentNode.dataset.code;
-      if (!$("body > #wishlist").hidden) {
+      const { code } = e.target.parentNode.parentNode.parentNode.dataset;
+      if (View.currentId === "wishlist") {
         Config.wishlist.delete(code);
         View.wishlist.remove("code", code);
         Config.set("wishlist", Config.wishlist);
         return false;
       }
-      if ($("body > #blacklist").hidden) {
+      if (View.currentId !== "blacklist") {
         let exampleItem;
-        switch ($(".selector ~ div[data-title]:not([hidden])").id) {
+        switch (View.currentId) {
           case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
           case "new":       exampleItem = View.new.get("code", code); break;
           case "deleted":   exampleItem = View.deleted.get("code", code); break;
@@ -410,7 +430,7 @@ View = {
       { attr: "href", name: "shortUrl" },
       { attr: "src", name: "thumbnail" },
     ],
-    item: `<li class="item"><div class="item-top"><div class="item-icon"><a target="_blank" class="url"><img class="thumbnail" /></a></div><div class="item-name"><a target="_blank" class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><span class="blacklist">×</span><div class="item-price price"></div></div></li>`,
+    item: `<li class="item"><div class="item-top"><div class="item-icon"><a target="_blank" class="url"><img class="thumbnail" /></a></div><div class="item-name"><a target="_blank" class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><span class="controls"><span class="blacklist">×</span>&nbsp;<span class="wishlist">+</span></span><div class="item-price price"></div></div></li>`,
     page: 40,
     pagination: [{ outerWindow: 1 }],
   },
@@ -432,6 +452,8 @@ Main = {
     if (previous instanceof Map) Config.local = previous;
     const wishlist = await Config.get("wishlist");
     if (wishlist instanceof Set) Config.wishlist = wishlist;
+    const settings = await Config.get("settings");
+    if (settings) Config.settings = settings;
     const blacklist = await Config.get("blacklist");
     if (isArray(blacklist)) {
       Config.blacklist = new Map(blacklist);

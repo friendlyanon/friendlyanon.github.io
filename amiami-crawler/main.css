@@ -98,6 +98,10 @@ a {
   cursor: pointer;
   color: red;
 }
+.wishlist {
+  cursor: pointer;
+  color: green;
+}
 .loading {
   z-index: 3;
   display: flex;
