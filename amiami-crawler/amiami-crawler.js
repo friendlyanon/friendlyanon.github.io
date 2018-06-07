@@ -248,7 +248,9 @@ View = {
     View.new = new List("new", scheme);
     View.deleted = new List("deleted", scheme);
     View.blacklist = new List("blacklist", scheme);
-    View.wishlist = new List("wishlist", scheme);
+    View.wishlist = new List("wishlist", assign({}, scheme, {
+      item: `<li class="item"><div class="item-top"><div class="item-icon"><a target="_blank" class="url"><img class="thumbnail" /></a></div><div class="item-name"><a target="_blank" class="name shortUrl"></a></div></div><div class="item-bottom"><div class="item-deal deal"></div><span class="controls"><span class="blacklist">×</span></span><div class="item-price price"></div></div></li>`,
+    }));
     View.modal = new VanillaModal;
   },
   populateHeader(selector) {
