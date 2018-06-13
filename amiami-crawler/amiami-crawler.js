@@ -86,12 +86,8 @@ Config = {
       typeof value === "object"
     ) {
       switch (value.constructor) {
-       case Map:
-        value = { type: "Map", data: [...values(value)] };
-        break;
-       case Set:
-        value = { type: "Set", data: [...value] };
-        break;
+        case Map: value = { type: "Map", data: [...values(value)] }; break;
+        case Set: value = { type: "Set", data: [...value] };         break;
       }
     }
     return await localforage.setItem(key, value);
@@ -103,10 +99,8 @@ Config = {
       typeof entry === "object"
     ) {
       switch (entry.type) {
-       case "Set":
-        return new Set(entry.data);
-       case "Map":
-        return toValues(new Map, entry.data);
+        case "Set": return new Set(entry.data);
+        case "Map": return toValues(new Map, entry.data);
       }
     }
     return entry;
@@ -307,6 +301,7 @@ View = {
       ) return;
       e.preventDefault();
       const { code } = e.target.parentNode.parentNode.parentNode.dataset;
+      Config.set("wishlist", Config.wishlist.add(code));
       let exampleItem;
       switch (View.currentId) {
         case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
@@ -314,7 +309,6 @@ View = {
         case "deleted":   exampleItem = View.deleted.get("code", code)[0]; break;
       }
       View.wishlist.add(exampleItem);
-      Config.set("wishlist", Config.wishlist.add(code));
       return false;
     }
     catch(err) { console.error(err); }
@@ -334,13 +328,20 @@ View = {
         return false;
       }
       const { code } = e.target.parentNode.parentNode.parentNode.dataset;
-      if (View.currentId === "wishlist") {
+      switch (View.currentId) {
+      case "wishlist":
         Config.wishlist.delete(code);
         View.wishlist.remove("code", code);
         Config.set("wishlist", Config.wishlist);
         return false;
-      }
-      if (View.currentId !== "blacklist") {
+      case "blacklist": {
+        const item = Config.blacklist.get(code);
+        Config.blacklist.delete(code);
+        View.blacklist.remove("code", code);
+        View.list.add(item);
+        View.list.sort("sort");
+      } break;
+      default: {
         let exampleItem;
         switch (View.currentId) {
           case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
@@ -348,17 +349,11 @@ View = {
           case "deleted":   exampleItem = View.deleted.get("code", code)[0]; break;
         }
         Config.blacklist.set(code, exampleItem);
-        View.blacklist.add(exampleItem);
         try { View.list.remove("code", code); } catch(_) { /*  */ }
         try { View.new.remove("code", code); } catch(_) { /*  */ }
         try { View.deleted.remove("code", code); } catch(_) { /*  */ }
-      }
-      else {
-        const item = Config.blacklist.get(code);
-        Config.blacklist.delete(code);
-        View.blacklist.remove("code", code);
-        View.list.add(item);
-        View.list.sort("sort");
+        try { View.blacklist.add(exampleItem); } catch(_) { /*  */ }
+      } break;
       }
       Config.set("blacklist", [...Config.blacklist]);
       return false;
