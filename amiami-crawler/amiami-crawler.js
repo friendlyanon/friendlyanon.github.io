@@ -40,6 +40,21 @@ function toValues(map, items) {
   return map;
 }
 
+const parser = new DOMParser;
+
+class AlternateXHR {
+  open(_, url) {
+    this.url = url;
+  }
+  send() {
+    window.dispatchEvent(new CustomEvent("amiami-xhr", { detail: this.url }));
+    window.addEventListener("amiami-res", ({ detail }) => {
+      const dom = parser.parseFromString(detail, "text/html");
+      this.onload.call({ response: dom });
+    }, { once: true });
+  }
+}
+
 Config = {
   local: new Map,
   remote: new Map,
@@ -119,18 +134,41 @@ Pages = {
     View.spinner();
     Pages.req();
   },
+  reqMethod: XMLHttpRequest,
   req() {
-    const xhr = new XMLHttpRequest;
+    const xhr = new Pages.reqMethod;
     xhr.open("GET", Pages.template.replace("<>", ++Pages.current));
     assign(xhr, {
       onload: Pages.afterReq,
-      onerror: console.error,
-      onabort: console.error,
-      ontimeout: console.error,
-      responseType: "document"
+      onerror: Pages.onFail,
+      onabort: Pages.onFail,
+      ontimeout: Pages.onFail,
+      responseType: "document",
     });
     $(".loading span").textContent = Pages.current;
     xhr.send();
+  },
+  queryUserJS(e) {
+    e.preventDefault();
+    const el = $(".loading");
+    const timer = setTimeout(() => {
+      el.innerHTML = "Not installed";
+    }, 5000);
+    window.addEventListener("amiami-xhr", () => {
+      clearTimeout(timer);
+      Pages.reqMethod = AlternateXHR;
+      Pages.current = 0;
+      el.remove();
+      Pages.main();
+    }, { once: true });
+    window.dispatchEvent(new CustomEvent("amiami-xhr"));
+  },
+  onFail(err) {
+    console.log(err);
+    const el = $(".loading");
+    el.setAttribute("style", "background-image: none; padding-left: 5px;");
+    el.innerHTML = ``;
+    el.lastElementChild.addEventListener("click", Pages.queryUserJS, { once: true });
   },
   afterReq() {
     if (Pages.pageunloaded) return;
@@ -305,8 +343,8 @@ View = {
       let exampleItem;
       switch (View.currentId) {
         case "full-list": exampleItem = Config.local.get(code).values().next().value; break;
-        case "new":       exampleItem = View.new.get("code", code)[0]; break;
-        case "deleted":   exampleItem = View.deleted.get("code", code)[0]; break;
+        case "new":       exampleItem = View.new.get("code", code)[0].values(); break;
+        case "deleted":   exampleItem = View.deleted.get("code", code)[0].values(); break;
       }
       View.wishlist.add(exampleItem);
       return false;
