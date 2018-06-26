@@ -158,6 +158,7 @@ Pages = {
       clearTimeout(timer);
       Pages.reqMethod = AlternateXHR;
       Pages.current = 0;
+      Pages.template = "http://slist.amiami.com/top/search/list?s_st_condition_flg=1&pagemax=50&getcnt=0&pagecnt=<>";
       el.remove();
       Pages.main();
     }, { once: true });

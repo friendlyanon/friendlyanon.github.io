@@ -13,7 +13,8 @@
 "use strict";
 let once = true;
 
-function onload() {
+function onload(e) {
+  console.log(this, e);
   document.dispatchEvent(new CustomEvent("amiami-res", { detail: this.response }));
 }
 
@@ -25,7 +26,7 @@ document.addEventListener("amiami-xhr", function(e) {
   }
   GM_xmlhttpRequest({
     method: "GET",
-    url: e.detail.replace("https://cors.now.sh/", ""),
+    url: e.detail,
     onload
   });
 });
