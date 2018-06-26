@@ -8,21 +8,16 @@
 // ==/UserScript==
 
 /* global GM_xmlhttpRequest */
-/* eslint-disable no-cond-assign */
 
 "use strict";
-let once = true;
 
 function onload(e) {
-  console.log(this, e);
-  document.dispatchEvent(new CustomEvent("amiami-res", { detail: this.response }));
+  document.dispatchEvent(new CustomEvent("amiami-res", { detail: e.response }));
 }
 
 document.addEventListener("amiami-xhr", function(e) {
-  console.log(e);
-  if (once) {
-    document.dispatchEvent(new CustomEvent("amiami-res"));
-    return once = false;
+  if (!e.detail) {
+    return document.dispatchEvent(new CustomEvent("amiami-res"));
   }
   GM_xmlhttpRequest({
     method: "GET",
