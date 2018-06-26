@@ -25,7 +25,7 @@ document.addEventListener("amiami-xhr", function(e) {
   }
   GM_xmlhttpRequest({
     method: "GET",
-    url: e.detail,
+    url: e.detail.replace("https://cors.now.sh/", ""),
     onload
   });
 });
