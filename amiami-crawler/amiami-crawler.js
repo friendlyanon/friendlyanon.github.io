@@ -47,8 +47,8 @@ class AlternateXHR {
     this.url = url;
   }
   send() {
-    window.dispatchEvent(new CustomEvent("amiami-xhr", { detail: this.url }));
-    window.addEventListener("amiami-res", ({ detail }) => {
+    document.dispatchEvent(new CustomEvent("amiami-xhr", { detail: this.url }));
+    document.addEventListener("amiami-res", ({ detail }) => {
       const dom = parser.parseFromString(detail, "text/html");
       this.onload.call({ response: dom });
     }, { once: true });
@@ -154,20 +154,20 @@ Pages = {
     const timer = setTimeout(() => {
       el.innerHTML = "Not installed";
     }, 5000);
-    window.addEventListener("amiami-xhr", () => {
+    document.addEventListener("amiami-xhr", () => {
       clearTimeout(timer);
       Pages.reqMethod = AlternateXHR;
       Pages.current = 0;
       el.remove();
       Pages.main();
     }, { once: true });
-    window.dispatchEvent(new CustomEvent("amiami-xhr"));
+    document.dispatchEvent(new CustomEvent("amiami-xhr"));
   },
   onFail(err) {
     console.log(err);
     const el = $(".loading");
     el.setAttribute("style", "background-image: none; padding-left: 5px;");
-    el.innerHTML = `Error. Try with <a href="#">userscript</a>`;
+    el.innerHTML = `Error. Try with&nbsp;<a href="#">userscript</a>`;
     el.lastElementChild.addEventListener("click", Pages.queryUserJS, { once: true });
   },
   afterReq() {

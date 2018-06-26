@@ -5,22 +5,22 @@
 // @include     https://friendlyanon.github.io/amiami-crawler/
 // @version     1
 // @grant       GM_xmlhttpRequest
-// @grant       unsafeWindow
 // ==/UserScript==
 
-/* global GM_xmlhttpRequest, unsafeWindow */
+/* global GM_xmlhttpRequest */
 /* eslint-disable no-cond-assign */
 
 "use strict";
 let once = true;
 
 function onload() {
-  unsafeWindow.dispatchEvent(new CustomEvent("amiami-res", { detail: this.response }));
+  document.dispatchEvent(new CustomEvent("amiami-res", { detail: this.response }));
 }
 
-unsafeWindow.addEventListener("amiami-xhr", function(e) {
+document.addEventListener("amiami-xhr", function(e) {
+  console.log(e);
   if (once) {
-    unsafeWindow.dispatchEvent(new CustomEvent("amiami-xhr"));
+    document.dispatchEvent(new CustomEvent("amiami-xhr"));
     return once = false;
   }
   GM_xmlhttpRequest({
