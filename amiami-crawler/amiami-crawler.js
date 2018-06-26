@@ -154,7 +154,7 @@ Pages = {
     const timer = setTimeout(() => {
       el.innerHTML = "Not installed";
     }, 5000);
-    document.addEventListener("amiami-xhr", () => {
+    document.addEventListener("amiami-res", () => {
       clearTimeout(timer);
       Pages.reqMethod = AlternateXHR;
       Pages.current = 0;

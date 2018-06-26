@@ -20,7 +20,7 @@ function onload() {
 document.addEventListener("amiami-xhr", function(e) {
   console.log(e);
   if (once) {
-    document.dispatchEvent(new CustomEvent("amiami-xhr"));
+    document.dispatchEvent(new CustomEvent("amiami-res"));
     return once = false;
   }
   GM_xmlhttpRequest({
