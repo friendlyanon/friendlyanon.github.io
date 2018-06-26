@@ -167,7 +167,7 @@ Pages = {
     console.log(err);
     const el = $(".loading");
     el.setAttribute("style", "background-image: none; padding-left: 5px;");
-    el.innerHTML = ``;
+    el.innerHTML = `Error. Try with <a href="#">userscript</a>`;
     el.lastElementChild.addEventListener("click", Pages.queryUserJS, { once: true });
   },
   afterReq() {
