@@ -5,23 +5,23 @@
 "use strict";
 
 let Pages, Parser, Main, View, Config;
-const { create, assign, entries } = Object;
+const { assign, entries } = Object;
 const { isArray } = Array;
 const { max } = Math;
 
 const queryString = (() => {
-  function NullProto() {}
-  NullProto.prototype = create(null);
   const plusRegex = /\+/g;
   return str => {
-    const ret = new NullProto;
+    const ret = {};
+    let skip = false;
     switch (str.charCodeAt()) {
-      case 35: case 38: case 63: str = str.substr(1); break;
+      case 35: case 38: case 63: skip = true; break;
     }
-    for (const param of str.split("&")) {
+    for (const param of (skip ? str.substr(1) : str).split("&")) {
       const [key, value] = param.replace(plusRegex, " ").split("=");
       ret[key] = value != null ? decodeURIComponent(value) : value;
     }
+    ret.__proto__ = null;
     return ret;
   };
 })();
@@ -139,6 +139,7 @@ Pages = {
     const xhr = new Pages.reqMethod;
     xhr.open("GET", Pages.template.replace("<>", ++Pages.current));
     assign(xhr, {
+      timeout: 5000,
       onload: Pages.afterReq,
       onerror: Pages.onFail,
       onabort: Pages.onFail,
@@ -152,7 +153,7 @@ Pages = {
     e.preventDefault();
     const el = $(".loading");
     const timer = setTimeout(() => {
-      el.innerHTML = "Not installed. <a href=\"//github.com/friendlyanon/friendlyanon.github.io/raw/master/amiami-crawler/AmiAmi_Crawler_-_Alternative_XHR.user.js\">Install</a>";
+      el.innerHTML = "Not installed.&nbsp;<a href=\"//github.com/friendlyanon/friendlyanon.github.io/raw/master/amiami-crawler/AmiAmi_Crawler_-_Alternative_XHR.user.js\">Install</a>";
     }, 5000);
     document.addEventListener("amiami-res", () => {
       clearTimeout(timer);
