@@ -152,7 +152,7 @@ Pages = {
     e.preventDefault();
     const el = $(".loading");
     const timer = setTimeout(() => {
-      el.innerHTML = "Not installed";
+      el.innerHTML = "Not installed. <a href=\"//github.com/friendlyanon/friendlyanon.github.io/raw/master/amiami-crawler/AmiAmi_Crawler_-_Alternative_XHR.user.js\">Install</a>";
     }, 5000);
     document.addEventListener("amiami-res", () => {
       clearTimeout(timer);
