@@ -9,25 +9,7 @@ const { assign, entries } = Object;
 const { isArray } = Array;
 const { max } = Math;
 
-const queryString = (() => {
-  const plusRegex = /\+/g;
-  return str => {
-    const ret = {};
-    let skip = false;
-    switch (str.charCodeAt()) {
-      case 35: case 38: case 63: skip = true; break;
-    }
-    for (const param of (skip ? str.substr(1) : str).split("&")) {
-      const [key, value] = param.replace(plusRegex, " ").split("=");
-      ret[key] = value != null ? decodeURIComponent(value) : value;
-    }
-    ret.__proto__ = null;
-    return ret;
-  };
-})();
-
 const $ = (a, b = document) => b.querySelector(a);
-const $$ = (a, b = document) => b.querySelectorAll(a);
 
 function* values(map) {
   for (const code of map.values()) yield* code.values();
@@ -49,8 +31,7 @@ class AlternateXHR {
   send() {
     document.dispatchEvent(new CustomEvent("amiami-xhr", { detail: this.url }));
     document.addEventListener("amiami-res", ({ detail }) => {
-      const dom = parser.parseFromString(detail, "text/html");
-      this.onload.call({ response: dom });
+      this.onload.call({ responseText: detail });
     }, { once: true });
   }
 }
@@ -143,8 +124,7 @@ Pages = {
       onload: Pages.afterReq,
       onerror: Pages.onFail,
       onabort: Pages.onFail,
-      ontimeout: Pages.onFail,
-      responseType: "json"
+      ontimeout: Pages.onFail
     });
     $(".loading span").textContent = Pages.current;
     xhr.send();
@@ -173,11 +153,12 @@ Pages = {
     el.lastElementChild.addEventListener("click", Pages.queryUserJS, { once: true });
   },
   afterReq() {
+    const json = JSON.parse(this.responseText);
     if (
       Pages.pageunloaded ||
-      !this.response.RSuccess
+      !json.RSuccess
     ) return;
-    for (const item of this.response.items) {
+    for (const item of json.items) {
       Parser.products.push(assign(item, { sort: ++Pages.sort }));
       Parser.check();
     }
