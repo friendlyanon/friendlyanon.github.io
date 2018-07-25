@@ -126,7 +126,7 @@ Config = {
 };
 
 Pages = {
-  template: "https://cors.now.sh/https://api.amiami.com/api/v1.0/items?pagemax=20&lang=eng&s_sortkey=preowned&s_st_condition_flg=1&pagecnt=<>",
+  template: "https://cors.now.sh/https://api.amiami.com/api/v1.0/items?pagemax=50&lang=eng&s_sortkey=preowned&s_st_condition_flg=1&pagecnt=<>",
   current: 0,
   sort: -1,
   main() {
@@ -159,7 +159,7 @@ Pages = {
       clearTimeout(timer);
       Pages.reqMethod = AlternateXHR;
       Pages.current = 0;
-      Pages.template = "https://api.amiami.com/api/v1.0/items?pagemax=20&lang=eng&s_sortkey=preowned&s_st_condition_flg=1&pagecnt=<>";
+      Pages.template = "https://api.amiami.com/api/v1.0/items?pagemax=50&lang=eng&s_sortkey=preowned&s_st_condition_flg=1&pagecnt=<>";
       el.remove();
       Pages.main();
     }, { once: true });
