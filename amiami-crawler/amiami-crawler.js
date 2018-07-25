@@ -154,7 +154,8 @@ Pages = {
     const json = JSON.parse(this.responseText);
     if (
       Pages.pageunloaded ||
-      !json.RSuccess
+      !json.RSuccess ||
+      !json.items.length
     ) return;
     for (const item of json.items) {
       Parser.products.push(assign(item, { sort: ++Pages.sort }));
