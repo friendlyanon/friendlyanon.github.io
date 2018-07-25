@@ -159,7 +159,7 @@ Pages = {
       clearTimeout(timer);
       Pages.reqMethod = AlternateXHR;
       Pages.current = 0;
-      Pages.template = "http://slist.amiami.com/top/search/list?s_st_condition_flg=1&pagemax=50&getcnt=0&pagecnt=<>";
+      Pages.template = "https://api.amiami.com/api/v1.0/items?pagemax=20&lang=eng&s_sortkey=preowned&s_st_condition_flg=1&pagecnt=<>";
       el.remove();
       Pages.main();
     }, { once: true });
