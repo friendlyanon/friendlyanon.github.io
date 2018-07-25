@@ -156,7 +156,10 @@ Pages = {
       Pages.pageunloaded ||
       !json.RSuccess ||
       !json.items.length
-    ) return;
+    ) {
+      View.spinnerEnd();
+      return View.display();
+    }
     for (const item of json.items) {
       Parser.products.push(assign(item, { sort: ++Pages.sort }));
       Parser.check();
