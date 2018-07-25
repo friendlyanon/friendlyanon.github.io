@@ -126,7 +126,7 @@ Config = {
 };
 
 Pages = {
-  template: "https://cors.now.sh/http://slist.amiami.com/top/search/list?s_st_condition_flg=1&pagemax=50&getcnt=0&pagecnt=<>",
+  template: "https://cors.now.sh/https://api.amiami.com/api/v1.0/items?pagemax=20&lang=eng&s_sortkey=preowned&s_st_condition_flg=1&pagecnt=<>",
   current: 0,
   sort: -1,
   main() {
@@ -144,7 +144,7 @@ Pages = {
       onerror: Pages.onFail,
       onabort: Pages.onFail,
       ontimeout: Pages.onFail,
-      responseType: "document",
+      responseType: "json"
     });
     $(".loading span").textContent = Pages.current;
     xhr.send();
@@ -173,18 +173,12 @@ Pages = {
     el.lastElementChild.addEventListener("click", Pages.queryUserJS, { once: true });
   },
   afterReq() {
-    if (Pages.pageunloaded) return;
-    const products = $$(".product_box", this.response);
-    if (!products.length) {
-      View.spinnerEnd();
-      return View.display();
-    }
-    for (const product of products) {
-      const thumbnail = $(".product_img img", product);
-      const name = $(".product_name_list a", product);
-      const price = $(".product_price", product);
-      const deal = $(".product_off", product);
-      Parser.products.push({ thumbnail, name, price, deal, sort: ++Pages.sort });
+    if (
+      Pages.pageunloaded ||
+      !this.response.RSuccess
+    ) return;
+    for (const item of this.response.items) {
+      Parser.products.push(assign(item, { sort: ++Pages.sort }));
       Parser.check();
     }
     if (!Config.interval) Pages.req();
@@ -197,7 +191,6 @@ Pages = {
 
 Parser = {
   products: [],
-  codeRegex: /-[RS]\d*$/,
   parsing: false,
   check() {
     if (Parser.parsing) return;
@@ -205,48 +198,24 @@ Parser = {
     Parser.parseProducts().catch(console.error);
   },
   async parseProducts() {
-    const { products, codeRegex } = Parser;
-    while(products.length) {
-      const { thumbnail, name, price, deal, sort } = products.shift();
+    const { products } = Parser;
+    while (products.length) {
+      const item = products.shift();
+      if (Config.blacklist.has(item.image_name)) continue;
       const result = {
-        thumbnail: "http://img.amiami.jp/images/product/thumbnail/noimage.gif",
-        name: "No Name",
-        price: "",
+        thumbnail: item.thumb_url ?
+          "https://img.amiami.jp" + item.thumb_url.replace("/main/", "/thumbnail/") :
+          "https://img.amiami.jp/images/product/thumbnail/noimage.gif",
+        name: item.gname || "No Name",
+        price: `${item.min_price} JPY`,
         deal: "",
-        url: "",
-        code: "",
-        fullCode: "",
-        shortUrl: "",
-        sort
+        url: "https://www.amiami.com/eng/detail/?gcode=" + item.gcode,
+        code: item.image_name,
+        fullCode: item.gcode,
+        shortUrl: "https://www.amiami.com/eng/detail/?gcode=" + item.image_name,
+        sort: item.sort
       };
-      let found = false;
-      if (thumbnail) {
-        result.thumbnail = thumbnail.src;
-        found = true;
-      }
-      if (name) {
-        result.name = name.textContent.trim() || result.name;
-        const { gcode } = queryString(name.search);
-        result.fullCode = gcode;
-        result.shortUrl = "http://www.amiami.com/top/detail/detail?gcode=" + (result.code = codeRegex.test(gcode) ? gcode.substr(0, gcode.lastIndexOf("-")) : gcode);
-        if (Config.blacklist.has(result.code)) continue;
-        result.url = "http://www.amiami.com/top/detail/detail?gcode=" + gcode;
-        found = true;
-      }
-      if (price) {
-        result.price = price.lastChild.data.trim();
-        found = true;
-      }
-      if (deal) {
-        result.deal = deal.textContent.trim();
-        found = true;
-      }
-      if (found) {
-        View.add(result);
-      }
-      else {
-        console.log("skipped %s", name);
-      }
+      View.add(result);
     }
     Parser.parsing = false;
   },

@@ -3,7 +3,7 @@
 // @description Alternative way to make network requests for AmiAmi Crawler
 // @namespace   friendlyanon
 // @include     https://friendlyanon.github.io/amiami-crawler/
-// @version     1
+// @version     2
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -22,6 +22,8 @@ document.addEventListener("amiami-xhr", function(e) {
   GM_xmlhttpRequest({
     method: "GET",
     url: e.detail,
+    responseType: "json",
+    headers: { "x-user-key": "amiami_dev" },
     onload
   });
 });
