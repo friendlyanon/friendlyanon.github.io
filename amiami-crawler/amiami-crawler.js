@@ -22,8 +22,6 @@ function toValues(map, items) {
   return map;
 }
 
-const parser = new DOMParser;
-
 class AlternateXHR {
   open(_, url) {
     this.url = url;
