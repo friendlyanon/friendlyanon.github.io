@@ -1,8 +1,24 @@
-/* eslint-disable strict */
+/* eslint-disable strict, no-cond-assign */
 (function() {
 
 "use strict";
 const { isArray } = Array;
+const { hasOwnProperty: has } = Object.prototype;
+const html = document.documentElement;
+const transitionEnd = (() => {
+  const el = document.createElement("div");
+  const transitions = [
+    ["transition", "transitionend"],
+    ["OTransition", "otransitionend"],
+    ["MozTransition", "transitionend"],
+    ["WebkitTransition", "webkitTransitionEnd"],
+  ];
+  for (let i = 0; i < 4; ++i) {
+    const pair = transitions[i];
+    if (typeof el.style[pair[0]] !== "undefined") return pair[1];
+  }
+  return null;
+})();
 
 const defaults = {
   modal: ".modal",
@@ -16,7 +32,6 @@ const defaults = {
   clickOutside: true,
   closeKeys: [27],
   transitions: true,
-  transitionEnd: null,
   onbeforeopen: null,
   onbeforeclose: null,
   onopen: null,
@@ -31,7 +46,7 @@ function getNode(selector, parent) {
   const targetNode = parent || document;
   const node = targetNode.querySelector(selector);
   if (!node) {
-    throwError(`${selector} not found in document.`);
+    throwError(`${selector} not found in document`);
   }
   return node;
 }
@@ -43,34 +58,36 @@ function getElementContext(e) {
   else if (typeof e === "string") {
     return document.querySelector(e);
   }
-  throwError("No selector supplied to open()");
-  return null;
+  return throwError("No selector supplied to open()");
 }
 
 function applyUserSettings(settings) {
-  return Object.assign(
-    {},
-    defaults,
-    settings,
-    { transitionEnd: { key: "transition", value: "transitionend" } },
-  );
+  const obj = {};
+  for (const k in defaults) if (has.call(defaults, k)) obj[k] = defaults[k];
+  for (const k in settings) if (has.call(settings, k)) obj[k] = settings[k];
+  return obj;
 }
 
-function matches(e, selector) {
-  const allMatches = (e.target.document || e.target.ownerDocument).querySelectorAll(selector);
-  const { body, documentElement } = document;
-  outerLoop:
-  for (const match of allMatches) {
-    let node = e.target;
-    while (node) {
-      switch (node) {
-        case body: case documentElement: continue outerLoop;
-        case match: return node;
-      }
-      node = node.parentNode;
-    }
+function matches(target, selector) {
+  const allMatches = target.ownerDocument.querySelectorAll(selector);
+  if (!allMatches) return;
+  for (let i = -1, match; match = allMatches.item(++i); ) {
+    let node = target;
+    do { if (node === html) break; if (node === match) return node; }
+    while (node = node.parentNode);
   }
-  return null;
+}
+
+function includes(list, value) {
+  return list.indexOf(value) >= 0;
+}
+
+function prepend(target, list) {
+  const fragment = document.createDocumentFragment();
+  for (let i = 0, len = list.length; i < len; ++i) {
+    fragment.appendChild(list[i]);
+  }
+  target.insertBefore(fragment, target.firstChild);
 }
 
 function getDomNodes(settings) {
@@ -80,183 +97,180 @@ function getDomNodes(settings) {
     modalInner,
     modalContent,
   } = settings;
+  const modalEl = getNode(modal);
   return {
-    modal: getNode(modal),
+    modal: modalEl,
     page: getNode(page),
-    modalInner: getNode(modalInner, getNode(modal)),
-    modalContent: getNode(modalContent, getNode(modal)),
+    modalInner: getNode(modalInner, modalEl),
+    modalContent: getNode(modalContent, modalEl),
   };
 }
 
-class VanillaModal {
-  constructor(settings) {
-    this.isOpen =
-    this.isListening = false;
-    this.current = null;
-    this.listeners = [];
+const transitions = [
+  "transitionDuration",
+  "oTransitionDuration",
+  "mozTransitionDuration",
+  "webkitTransitionDuration",
+];
 
-    this.dom = getDomNodes(this.settings = applyUserSettings(settings));
-
-    this.dom.page.classList.add(this.settings.loadClass);
-    this.listen();
-  }
-
-  open(allMatches, e) {
-    const { page } = this.dom;
-    const { onbeforeopen, onopen } = this.settings;
-    this.releaseNode(this.current);
-    this.current = getElementContext(allMatches);
-    if (!(this.current instanceof HTMLElement)) {
-      throwError("VanillaModal target must exist on page.");
-      return;
-    }
-    if (typeof onbeforeopen === "function") {
-      try { onbeforeopen.call(this, e); }
-      catch (err) { console.error(err); }
-    }
-    this.captureNode(this.current);
-    page.classList.add(this.settings.class);
-    page.setAttribute("data-current-modal", this.current.id || "anonymous");
-    this.isOpen = true;
-    if (typeof onopen === "function") {
-      try { onopen.call(this, e); }
-      catch (err) { console.error(err); }
-    }
-  }
-
-  get hasTransition() {
-    return this.dom.modal.style.hasOwnProperty("transitionDuration");
-  }
-
-  close(e) {
-    if (!this.isOpen) return;
-    const {
-      transitions,
-      transitionEnd,
-      onbeforeclose,
-    } = this.settings;
-    this.isOpen = false;
-    if (typeof onbeforeclose === "function") {
-      try { onbeforeclose.call(this, e); }
-      catch (err) { console.error(err); }
-    }
-    this.dom.page.classList.remove(this.settings.class);
-    if (
-      transitions &&
-      transitionEnd &&
-      this.hasTransition
-    ) {
-      this.closeModalWithTransition(e);
-    }
-    else {
-      this.closeModal(e);
-    }
-  }
-
-  closeModal(e) {
-    const { onclose } = this.settings;
-    this.dom.page.removeAttribute("data-current-modal");
-    this.releaseNode(this.current);
-    this.isOpen = false;
-    this.current = null;
-    if (typeof onclose === "function") {
-      try { onclose.call(this, e); }
-      catch (err) { console.error(err); }
-    }
-  }
-
-  closeModalWithTransition(e) {
-    const { modal } = this.dom;
-    const { transitionEnd } = this.settings;
-    const closeTransitionHandler = () => this.closeModal(e);
-    modal.addEventListener(transitionEnd, closeTransitionHandler, { once: true });
-  }
-
-  captureNode(node) {
-    if (node) this.dom.modalContent.prepend(...node.childNodes);
-  }
-
-  releaseNode(node) {
-    if (node) node.prepend(...this.dom.modalContent.childNodes);
-  }
-
-  closeKeyHandler(e) {
-    const { closeKeys } = this.settings;
-    if (
-      isArray(closeKeys) &&
-      closeKeys.length &&
-      closeKeys.indexOf(e.which) > -1 &&
-      this.isOpen
-    ) {
-      e.preventDefault();
-      this.close(e);
-    }
-  }
-
-  outsideClickHandler(e) {
-    const { clickOutside } = this.settings;
-    if (clickOutside) {
-      const { body } = document;
-      const { modalInner } = this.dom;
-      let node = e.target;
-      whileLoop:
-      while (node) {
-        switch (node) {
-          case body: break whileLoop;
-          case modalInner: return;
-        }
-        node = node.parentNode;
-      }
-      this.close(e);
-    }
-  }
-
-  delegateOpen(e) {
-    const { open } = this.settings;
-    const matchedNode = matches(e, open);
-    if (matchedNode) {
-      e.preventDefault();
-      this.open(matchedNode, e);
-    }
-  }
-
-  delegateClose(e) {
-    const { close } = this.settings;
-    if (matches(e, close)) {
-      e.preventDefault();
-      this.close(e);
-    }
-  }
-
-  listen() {
-    if (!this.isListening) {
-      const { dom: { modal }, listeners } = this;
-      modal.addEventListener("click", listeners[listeners.push(e => this.outsideClickHandler(e)) - 1], false);
-      document.addEventListener("keydown", listeners[listeners.push(e => this.closeKeyHandler(e)) - 1], false);
-      document.addEventListener("click", listeners[listeners.push(e => this.delegateOpen(e)) - 1], false);
-      document.addEventListener("click", listeners[listeners.push(e => this.delegateClose(e)) - 1], false);
-      this.isListening = true;
-    }
-    else {
-      throwError("Event listeners already applied.");
-    }
-  }
-
-  destroy() {
-    if (this.isListening) {
-      const { dom: { modal }, listeners } = this;
-      this.close();
-      document.removeEventListener("click", listeners.pop());
-      document.removeEventListener("click", listeners.pop());
-      document.removeEventListener("keydown", listeners.pop());
-      modal.removeEventListener("click", listeners.pop());
-      this.isListening = false;
-    }
-    else {
-      throwError("Event listeners already removed.");
-    }
+function hasTransition(el) {
+  const css = window.getComputedStyle(el, null);
+  for (let i = 0; i < 4; ++i) {
+    const prop = css[transitions[i]];
+    if (typeof prop !== "string") continue;
+    return parseFloat(prop) > 0;
   }
 }
+
+function crankshaftTryCatch(fn, context, event) {
+  try { fn.call(context, event); }
+  catch (error) { console.error(error); }
+}
+
+class VanillaModal {
+
+constructor(settings) {
+  this.isOpen =
+  this.isListening = false;
+  this.current = null;
+  this.listeners = [];
+
+  this.dom = getDomNodes(this.settings = applyUserSettings(settings));
+
+  this.dom.page.classList.add(this.settings.loadClass);
+  this.listen();
+}
+
+open(allMatches, e) {
+  const { page } = this.dom;
+  const { onbeforeopen, onopen, class: _class } = this.settings;
+  this.releaseNode(this.current);
+  this.current = getElementContext(allMatches);
+  if (!this.current) {
+    return throwError("VanillaModal target must exist on page");
+  }
+  if (typeof onbeforeopen === "function") {
+    crankshaftTryCatch(onbeforeopen, this, e);
+  }
+  this.captureNode(this.current);
+  page.classList.add(_class);
+  page.setAttribute("data-current-modal", this.current.id || "anonymous");
+  this.isOpen = true;
+  if (typeof onopen === "function") {
+    crankshaftTryCatch(onopen, this, e);
+  }
+}
+
+close(e) {
+  if (!this.isOpen) return;
+  const {
+    settings: { transitions, onbeforeclose, class: _class },
+    dom,
+  } = this;
+  this.isOpen = false;
+  if (typeof onbeforeclose === "function") {
+    crankshaftTryCatch(onbeforeclose, this, e);
+  }
+  dom.page.classList.remove(_class);
+  if (
+    transitions &&
+    transitionEnd &&
+    hasTransition(dom.modal)
+  ) {
+    return this.closeModalWithTransition(e);
+  }
+  this.closeModal(e);
+}
+
+closeModal(e) {
+  const { onclose } = this.settings;
+  this.dom.page.removeAttribute("data-current-modal");
+  this.releaseNode(this.current);
+  this.isOpen = false;
+  this.current = null;
+  if (typeof onclose === "function") {
+    crankshaftTryCatch(onclose, this, e);
+  }
+}
+
+closeModalWithTransition(e) {
+  const that = this;
+  const { modal } = this.dom;
+  function closeHandler() {
+    modal.removeEventListener(transitionEnd, closeHandler, false);
+    that.closeModal(e);
+  }
+  modal.addEventListener(transitionEnd, closeHandler, false);
+}
+
+captureNode(node) {
+  if (node) prepend(this.dom.modalContent, node.childNodes);
+}
+
+releaseNode(node) {
+  if (node) prepend(node, this.dom.modalContent.childNodes);
+}
+
+closeKeyHandler(e) {
+  const { closeKeys } = this.settings;
+  if (
+    this.isOpen &&
+    isArray(closeKeys) &&
+    closeKeys.length &&
+    includes(closeKeys, e.which)
+  ) {
+    e.preventDefault();
+    this.close(e);
+  }
+}
+
+outsideClickHandler(e) {
+  if (!this.settings.clickOutside) return;
+  const { modalInner } = this.dom;
+  let node = e.target;
+  do { if (node === html) break; if (node === modalInner) return; }
+  while (node = node.parentNode);
+  this.close(e);
+}
+
+delegateOpen(e) {
+  const matchedNode = matches(e.target, this.settings.open);
+  if (!matchedNode) return;
+  e.preventDefault();
+  this.open(matchedNode, e);
+}
+
+delegateClose(e) {
+  if (!matches(e.target, this.settings.close)) return;
+  e.preventDefault();
+  this.close(e);
+}
+
+listen() {
+  if (this.isListening) return throwError("Event listeners already applied");
+  const that = this;
+  function modalClick(e) { that.outsideClickHandler(e); }
+  function docKeydown(e) { that.closeKeyHandler(e); }
+  function docClick(e) { that.delegateOpen(e); that.delegateClose(e); }
+  const { dom: { modal }, listeners } = this;
+  listeners.push(modalClick, docKeydown, docClick);
+  modal.addEventListener("click", modalClick, false);
+  document.addEventListener("keydown", docKeydown, false);
+  document.addEventListener("click", docClick, false);
+  this.isListening = true;
+}
+
+destroy() {
+  if (!this.isListening) return throwError("Event listeners already removed");
+  const { dom: { modal }, listeners } = this;
+  this.close();
+  document.removeEventListener("click", listeners.pop(), false);
+  document.removeEventListener("keydown", listeners.pop(), false);
+  modal.removeEventListener("click", listeners.pop(), false);
+  this.isListening = false;
+}
+
+} // class VanillaModal
 
 window.VanillaModal = VanillaModal;
 
