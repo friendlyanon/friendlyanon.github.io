@@ -82,11 +82,10 @@ function includes(list, value) {
   return list.indexOf(value) >= 0;
 }
 
-function prepend(target, list) {
+function prepend(target, source) {
   const fragment = document.createDocumentFragment();
-  for (let i = 0, len = list.length; i < len; ++i) {
-    fragment.appendChild(list[i]);
-  }
+  let el;
+  while (el = source.firstChild) fragment.appendChild(el);
   target.insertBefore(fragment, target.firstChild);
 }
 
@@ -204,11 +203,11 @@ closeModalWithTransition(e) {
 }
 
 captureNode(node) {
-  if (node) prepend(this.dom.modalContent, node.childNodes);
+  if (node) prepend(this.dom.modalContent, node);
 }
 
 releaseNode(node) {
-  if (node) prepend(node, this.dom.modalContent.childNodes);
+  if (node) prepend(node, this.dom.modalContent);
 }
 
 closeKeyHandler(e) {
