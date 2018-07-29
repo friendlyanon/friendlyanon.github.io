@@ -2,22 +2,26 @@
 (function() {
 
 "use strict";
-const { isArray } = Array;
-const { hasOwnProperty: has } = Object.prototype;
+const { hasOwnProperty: has, toString } = Object.prototype;
 const html = document.documentElement;
-const transitionEnd = (() => {
+const { 0: transitionEnd, 1: transitionDuration } = (() => {
   const el = document.createElement("div");
-  const transitions = [
-    ["transition", "transitionend"],
-    ["OTransition", "otransitionend"],
-    ["MozTransition", "transitionend"],
-    ["WebkitTransition", "webkitTransitionEnd"],
-  ];
-  for (let i = 0; i < 4; ++i) {
-    const pair = transitions[i];
-    if (typeof el.style[pair[0]] !== "undefined") return pair[1];
+  if ("transition" in el.style) {
+    return ["transitionend", "transitionDuration"];
   }
-  return null;
+  if ("OTransition" in el.style) {
+    if (Number(opera.version().split(".")[0]) > 11) {
+      return ["otransitionend", "OTransitionDuration"];
+    }
+    return ["oTransitionEnd", "OTransitionDuration"];
+  }
+  if ("MozTransition" in el.style) {
+    return ["transitionend", "MozTransitionDuration"];
+  }
+  if ("WebkitTransition" in el.style) {
+    return ["webkitTransitionEnd", "WebkitTransitionDuration"];
+  }
+  return {};
 })();
 
 const defaults = {
@@ -37,6 +41,10 @@ const defaults = {
   onopen: null,
   onclose: null,
 };
+
+function isArray(obj) {
+  return toString.call(obj) === "[object Array]";
+}
 
 function throwError(message) {
   console.error(`VanillaModal: ${message}`);
@@ -63,8 +71,9 @@ function getElementContext(e) {
 
 function applyUserSettings(settings) {
   const obj = {};
-  for (const k in defaults) if (has.call(defaults, k)) obj[k] = defaults[k];
-  for (const k in settings) if (has.call(settings, k)) obj[k] = settings[k];
+  let k;
+  for (k in defaults) if (has.call(defaults, k)) obj[k] = defaults[k];
+  for (k in settings) if (has.call(settings, k)) obj[k] = settings[k];
   return obj;
 }
 
@@ -76,10 +85,6 @@ function matches(target, selector) {
     do { if (node === html) break; if (node === match) return node; }
     while (node = node.parentNode);
   }
-}
-
-function includes(list, value) {
-  return list.indexOf(value) >= 0;
 }
 
 function prepend(target, source) {
@@ -105,25 +110,14 @@ function getDomNodes(settings) {
   };
 }
 
-const transitions = [
-  "transitionDuration",
-  "oTransitionDuration",
-  "mozTransitionDuration",
-  "webkitTransitionDuration",
-];
-
 function hasTransition(el) {
-  const css = window.getComputedStyle(el, null);
-  for (let i = 0; i < 4; ++i) {
-    const prop = css[transitions[i]];
-    if (typeof prop !== "string") continue;
-    return parseFloat(prop) > 0;
-  }
+  const css = window.getComputedStyle(el, null)[transitionDuration];
+  return typeof css === "string" && parseFloat(css) > 0;
 }
 
 function crankshaftTryCatch(fn, context, event) {
   try { fn.call(context, event); }
-  catch (error) { console.error(error); }
+  catch (err) { throwError(err); }
 }
 
 class VanillaModal {
@@ -216,7 +210,7 @@ closeKeyHandler(e) {
     this.isOpen &&
     isArray(closeKeys) &&
     closeKeys.length &&
-    includes(closeKeys, e.which)
+    closeKeys.indexOf(e.which) >= 0
   ) {
     e.preventDefault();
     this.close(e);
