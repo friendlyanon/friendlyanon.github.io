@@ -72,17 +72,23 @@ function addClass(el, _class) {
   if (!el.hasAttribute("class")) return void el.setAttribute("class", _class);
   const classNames = trim(el.getAttribute("class")).split(whitespaceRegex);
   if (classNames.indexOf(_class) >= 0) return;
-  classNames.push(_class);
-  el.setAttribute("class", classNames.join(" "));
+  switch (classNames.length) {
+    case 0: el.setAttribute("class", _class); break;
+    case 1: el.setAttribute("class", `${classNames[0]} ${_class}`); break;
+    default: el.setAttribute("class", `${classNames.join(" ")} ${_class}`);
+  }
 }
 
 function removeClass(el, _class) {
   if (!el.hasAttribute("class")) return;
   const classNames = trim(el.getAttribute("class")).split(whitespaceRegex);
+  const len = classNames.length;
+  if (!len) return void el.removeAttribute("class");
   const idx = classNames.indexOf(_class);
   if (idx < 0) return;
+  if (len === 1) return void el.removeAttribute("class");
   classNames.splice(idx, 1);
-  el.setAttribute("class", classNames.join(" "));
+  el.setAttribute("class", len > 2 ? classNames.join(" ") : classNames[0]);
 }
 
 function getElementContext(e) {
