@@ -180,25 +180,35 @@ Parser = {
     Parser.parsing = true;
     Parser.parseProducts().catch(console.error);
   },
+  formatPrice({ min_price: price }) {
+    if (!price) return "";
+    if (price < 1000) return `${price} JPY`;
+    const str = String(price);
+    switch (str.length) {
+      case 4: return `${str.substr(0, 1)},${str.substr(1, 3)} JPY`;
+      case 5: return `${str.substr(0, 2)},${str.substr(2, 3)} JPY`;
+      case 6: return `${str.substr(0, 3)},${str.substr(3, 3)} JPY`;
+      case 7: return `${str.charAt()},${str.substr(1, 3)},${str.substr(4, 3)} JPY`;
+    }
+  },
   async parseProducts() {
     const { products } = Parser;
     while (products.length) {
       const item = products.shift();
       if (Config.blacklist.has(item.image_name)) continue;
-      const result = {
+      View.add({
         thumbnail: item.thumb_url ?
           "https://img.amiami.jp" + item.thumb_url.replace("/main/", "/thumbnail/") :
           "https://img.amiami.jp/images/product/thumbnail/noimage.gif",
         name: item.gname || "No Name",
-        price: `${item.min_price} JPY`,
+        price: Parser.formatPrice(item),
         deal: "",
         url: "https://www.amiami.com/eng/detail/?gcode=" + item.gcode,
         code: item.image_name,
         fullCode: item.gcode,
         shortUrl: "https://www.amiami.com/eng/detail/?gcode=" + item.image_name,
         sort: item.sort
-      };
-      View.add(result);
+      });
     }
     Parser.parsing = false;
   },
