@@ -167,6 +167,7 @@ constructor(settings) {
 }
 
 open(selector, e) {
+  if (this.isOpen) return;
   const { page } = this.dom;
   const { onbeforeopen, onopen, class: _class } = this.settings;
   this.releaseNode(this.current);
