@@ -27,3 +27,4 @@ If you are a CSS wizard who feels like helping then please poke me at
 skype1234@waifu.club with your discord id maybe to pretty this shit up, thanks.
 
 [1]: https://friendlyanon.github.io/amiami-crawler/
+[2]: https://cors.now.sh/
