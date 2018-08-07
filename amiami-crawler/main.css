@@ -10,7 +10,11 @@ html, body {
   border: 0;
 }
 a {
+  color: hsl(200, 100%, 55%);
   text-decoration: none;
+}
+a:visited {
+  color: hsl(240, 100%, 70%);
 }
 .pagination {
   list-style: none;
