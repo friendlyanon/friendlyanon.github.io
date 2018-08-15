@@ -152,21 +152,27 @@ Pages = {
     el.lastElementChild.addEventListener("click", Pages.queryUserJS, { once: true });
   },
   afterReq() {
-    const json = JSON.parse(this.responseText);
-    if (
-      Pages.pageunloaded ||
-      !json.RSuccess ||
-      !json.items.length
-    ) {
-      View.spinnerEnd();
-      return View.display();
+    try {
+      const json = JSON.parse(this.responseText);
+      if (
+        Pages.pageunloaded ||
+        !json.RSuccess ||
+        !json.items.length
+      ) {
+        View.spinnerEnd();
+        return View.display();
+      }
+      for (const item of json.items) {
+        Parser.products.push(assign(item, { sort: ++Pages.sort }));
+        Parser.check();
+      }
+      if (!Config.interval) Pages.req();
+      else setTimeout(Pages.req, Config.interval);
     }
-    for (const item of json.items) {
-      Parser.products.push(assign(item, { sort: ++Pages.sort }));
-      Parser.check();
+    catch(err) {
+      console.error(err);
+      Pages.onFail();
     }
-    if (!Config.interval) Pages.req();
-    else setTimeout(Pages.req, Config.interval);
   },
   unload() {
     Pages.pageunloaded = true;
