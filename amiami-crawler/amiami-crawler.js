@@ -105,7 +105,7 @@ Config = {
 };
 
 Pages = {
-  template: "https://cors.now.sh/https://api.amiami.com/api/v1.0/items?pagemax=50&lang=eng&s_sortkey=preowned&s_st_condition_flg=1&pagecnt=<>",
+  template: "https://cors-anywhere.herokuapp.com/https://api.amiami.com/api/v1.0/items?pagemax=50&lang=eng&s_sortkey=preowned&s_st_condition_flg=1&pagecnt=<>",
   current: 0,
   sort: -1,
   main() {
@@ -124,6 +124,7 @@ Pages = {
       onabort: Pages.onFail,
       ontimeout: Pages.onFail
     });
+    xhr.setRequestHeader("X-User-Key", "amiami_dev");
     $(".loading span").textContent = Pages.current;
     xhr.send();
   },
