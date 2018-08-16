@@ -26,6 +26,7 @@ class AlternateXHR {
   open(_, url) {
     this.url = url;
   }
+  setRequestHeader() {}
   send() {
     document.dispatchEvent(new CustomEvent("amiami-xhr", { detail: this.url }));
     document.addEventListener("amiami-res", ({ detail }) => {
