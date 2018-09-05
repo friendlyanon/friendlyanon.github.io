@@ -47,6 +47,9 @@ const defaults = {
   onclose: null,
 };
 
+const instancesMap = [];
+const instanceId = "data-vanilla-id-" + Math.random().toString(32).slice(2);
+
 function isArray(obj) {
   return toString.call(obj) === "[object Array]";
 }
@@ -112,7 +115,7 @@ function applyUserSettings(settings) {
 function matches(target, selector) {
   const allMatches = target.ownerDocument.querySelectorAll(selector);
   if (!allMatches) return;
-  for (let i = -1, match; match = allMatches.item(++i); ) {
+  for (let i = 0, match; match = allMatches.item(i++); ) {
     let node = target;
     do { if (node === html) break; if (node === match) return node; }
     while (node = node.parentNode);
@@ -152,22 +155,54 @@ function crankshaftTryCatch(fn, context, event) {
   catch (err) { throwError(err); }
 }
 
+document.addEventListener("keydown", function(e) {
+  const len = instancesMap.length;
+  for (let i = 0; i < len; ++i) {
+    const inst = instancesMap[i];
+    if (inst) crankshaftTryCatch(inst.closeKeyHandler, inst, e);
+  }
+}, false);
+
+document.addEventListener("click", function(e) {
+  const len = instancesMap.length;
+  let node = e.target;
+  do {
+    if (node === html) break;
+    if (node.hasAttribute(instanceId)) {
+      const inst = instancesMap[node.getAttribute(instanceId)];
+      if (inst) crankshaftTryCatch(inst.outsideClickHandler, inst, e);
+      break;
+    }
+  } while (node = node.parentNode);
+  for (let i = 0; i < len; ++i) {
+    const inst = instancesMap[i];
+    if (inst === null) continue;
+    crankshaftTryCatch(inst.delegateOpen, inst, e);
+    crankshaftTryCatch(inst.delegateClose, inst, e);
+  }
+}, false);
+
 class VanillaModal {
 
 constructor(settings) {
   this.isOpen =
   this.isListening = false;
   this.current = null;
-  this.listeners = [];
+  this.instanceId = null;
 
   this.dom = getDomNodes(this.settings = applyUserSettings(settings));
+
+  const len = instancesMap.length;
+  for (let i = 0; i < len; ++i) {
+    const inst = instancesMap[i];
+    if (inst && inst.dom.modal.parentNode === null) instancesMap[i] = null;
+  }
 
   addClass(this.dom.page, this.settings.loadClass);
   this.listen();
 }
 
 open(selector, e) {
-  if (this.isOpen) return;
   const { page } = this.dom;
   const { onbeforeopen, onopen, class: _class } = this.settings;
   this.releaseNode(this.current);
@@ -274,25 +309,19 @@ delegateClose(e) {
 
 listen() {
   if (this.isListening) return throwError("Event listeners already applied");
-  const that = this;
-  function modalClick(e) { that.outsideClickHandler(e); }
-  function docKeydown(e) { that.closeKeyHandler(e); }
-  function docClick(e) { that.delegateOpen(e); that.delegateClose(e); }
-  const { dom: { modal }, listeners } = this;
-  listeners.push(modalClick, docKeydown, docClick);
-  modal.addEventListener("click", modalClick, false);
-  document.addEventListener("keydown", docKeydown, false);
-  document.addEventListener("click", docClick, false);
+  this.dom.modal.setAttribute(
+    instanceId,
+    this.instanceId = instancesMap.push(this) - 1
+  );
   this.isListening = true;
 }
 
 destroy() {
   if (!this.isListening) return throwError("Event listeners already removed");
-  const { dom: { modal }, listeners } = this;
   this.close();
-  document.removeEventListener("click", listeners.pop(), false);
-  document.removeEventListener("keydown", listeners.pop(), false);
-  modal.removeEventListener("click", listeners.pop(), false);
+  instancesMap[this.instanceId] = null;
+  this.instanceId = null;
+  this.dom.modal.removeAttribute(instanceId);
   this.isListening = false;
 }
 
