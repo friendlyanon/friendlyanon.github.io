@@ -26,7 +26,7 @@ const {
   }
   return {};
 })();
-const trimRegex = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+const trimCodes = [9, 10, 11, 12, 13, 32, 65279];
 const whitespaceRegex = /\s+/;
 
 const defaults = {
@@ -68,7 +68,13 @@ function getNode(selector, parent) {
 }
 
 function trim(str) {
-  return str.replace(trimRegex, "");
+  if (typeof str !== "string") return "";
+  let i = 0, j = str.length;
+  if (!j) return "";
+  while (trimCodes.indexOf(str.charCodeAt(i++)) >= 0);
+  if (i === j) return "";
+  while (trimCodes.indexOf(str.charCodeAt(--j)) >= 0);
+  return --i >= ++j ? "" : str.slice(i, j);
 }
 
 function addClass(el, _class) {
@@ -115,7 +121,7 @@ function applyUserSettings(settings) {
 function matches(target, selector) {
   const allMatches = target.ownerDocument.querySelectorAll(selector);
   if (!allMatches) return;
-  for (let i = 0, match; match = allMatches.item(i++); ) {
+  for (let i = 0, match; match = allMatches[i++]; ) {
     let node = target;
     do { if (node === html) break; if (node === match) return node; }
     while (node = node.parentNode);
@@ -182,12 +188,12 @@ document.addEventListener("click", function(e) {
   }
 }, false);
 
-class VanillaModal {
+const VanillaModal = class VanillaModal {
 
 constructor(settings) {
   this.isOpen =
   this.isListening = false;
-  this.current = null;
+  this.current =
   this.instanceId = null;
 
   this.dom = getDomNodes(this.settings = applyUserSettings(settings));
@@ -319,13 +325,13 @@ listen() {
 destroy() {
   if (!this.isListening) return throwError("Event listeners already removed");
   this.close();
+  this.instanceId =
   instancesMap[this.instanceId] = null;
-  this.instanceId = null;
   this.dom.modal.removeAttribute(instanceId);
   this.isListening = false;
 }
 
-} // class VanillaModal
+}; // class VanillaModal
 
 window.VanillaModal = VanillaModal;
 
