@@ -26,7 +26,6 @@ const {
   }
   return {};
 })();
-const trimCodes = [9, 10, 11, 12, 13, 32, 65279];
 const whitespaceRegex = /\s+/;
 
 const defaults = {
@@ -69,17 +68,28 @@ function getNode(selector, parent) {
 
 function trim(str) {
   if (typeof str !== "string") return "";
-  let i = 0, j = str.length;
+  let c, i = 0, j = str.length;
   if (!j) return "";
-  while (trimCodes.indexOf(str.charCodeAt(i++)) >= 0);
+  while ((c = str.charCodeAt(i++)) >= 0) {
+    switch (c) {
+      case 9: case 10: case 11: case 12: case 13: case 32: case 65279: continue;
+    }
+    break;
+  }
   if (i === j) return "";
-  while (trimCodes.indexOf(str.charCodeAt(--j)) >= 0);
+  while ((c = str.charCodeAt(--j)) >= 0) {
+    switch (c) {
+      case 9: case 10: case 11: case 12: case 13: case 32: case 65279: continue;
+    }
+    break;
+  }
   return --i >= ++j ? "" : str.slice(i, j);
 }
 
 function addClass(el, _class) {
-  if (!el.hasAttribute("class")) return void el.setAttribute("class", _class);
-  const classNames = trim(el.getAttribute("class")).split(whitespaceRegex);
+  const attribute = el.getAttribute("class");
+  if (!attribute) return el.setAttribute("class", _class);
+  const classNames = trim(attribute).split(whitespaceRegex);
   if (classNames.indexOf(_class) >= 0) return;
   switch (classNames.length) {
     case 0: el.setAttribute("class", _class); break;
@@ -89,13 +99,14 @@ function addClass(el, _class) {
 }
 
 function removeClass(el, _class) {
-  if (!el.hasAttribute("class")) return;
-  const classNames = trim(el.getAttribute("class")).split(whitespaceRegex);
+  const attribute = el.getAttribute("class");
+  if (!attribute) return;
+  const classNames = trim(attribute).split(whitespaceRegex);
   const len = classNames.length;
-  if (!len) return void el.removeAttribute("class");
+  if (!len) return el.removeAttribute("class");
   const idx = classNames.indexOf(_class);
   if (idx < 0) return;
-  if (len === 1) return void el.removeAttribute("class");
+  if (len === 1) return el.removeAttribute("class");
   classNames.splice(idx, 1);
   el.setAttribute("class", len > 2 ? classNames.join(" ") : classNames[0]);
 }
@@ -112,16 +123,17 @@ function getElementContext(e) {
 
 function applyUserSettings(settings) {
   const obj = {};
-  let k;
-  for (k in defaults) if (has.call(defaults, k)) obj[k] = defaults[k];
-  for (k in settings) if (has.call(settings, k)) obj[k] = settings[k];
+  for (const k in defaults) if (has.call(defaults, k)) obj[k] = defaults[k];
+  for (const k in settings) if (has.call(settings, k)) obj[k] = settings[k];
   return obj;
 }
 
 function matches(target, selector) {
   const allMatches = target.ownerDocument.querySelectorAll(selector);
   if (!allMatches) return;
-  for (let i = 0, match; match = allMatches[i++]; ) {
+  const len = allMatches.length;
+  for (let i = 0; i < len; ++i) {
+    const match = allMatches[i];
     let node = target;
     do { if (node === html) break; if (node === match) return node; }
     while (node = node.parentNode);
@@ -130,8 +142,7 @@ function matches(target, selector) {
 
 function prepend(target, source) {
   const fragment = document.createDocumentFragment();
-  let el;
-  while (el = source.firstChild) fragment.appendChild(el);
+  for (let el; el = source.firstChild; ) fragment.appendChild(el);
   target.insertBefore(fragment, target.firstChild);
 }
 
@@ -163,55 +174,62 @@ function crankshaftTryCatch(fn, context, event) {
 
 document.addEventListener("keydown", function(e) {
   const len = instancesMap.length;
+  const { _closeKeyHandler } = VanillaModal.prototype;
   for (let i = 0; i < len; ++i) {
     const inst = instancesMap[i];
-    if (inst) crankshaftTryCatch(inst.closeKeyHandler, inst, e);
+    if (inst) crankshaftTryCatch(_closeKeyHandler, inst, e);
   }
 }, false);
 
 document.addEventListener("click", function(e) {
   const len = instancesMap.length;
+  const {
+    _outsideClickHandler,
+    _delegateOpen,
+    _delegateClose
+  } = VanillaModal.prototype;
   let node = e.target;
   do {
     if (node === html) break;
-    if (node.hasAttribute(instanceId)) {
-      const inst = instancesMap[node.getAttribute(instanceId)];
-      if (inst) crankshaftTryCatch(inst.outsideClickHandler, inst, e);
+    const attribute = node.getAttribute(instanceId);
+    if (attribute) {
+      const inst = instancesMap[attribute];
+      if (inst) crankshaftTryCatch(_outsideClickHandler, inst, e);
       break;
     }
   } while (node = node.parentNode);
   for (let i = 0; i < len; ++i) {
     const inst = instancesMap[i];
     if (inst === null) continue;
-    crankshaftTryCatch(inst.delegateOpen, inst, e);
-    crankshaftTryCatch(inst.delegateClose, inst, e);
+    crankshaftTryCatch(_delegateOpen, inst, e);
+    crankshaftTryCatch(_delegateClose, inst, e);
   }
 }, false);
 
-const VanillaModal = class VanillaModal {
+const VanillaModal = class {
 
 constructor(settings) {
   this.isOpen =
-  this.isListening = false;
+  this._isListening = false;
   this.current =
-  this.instanceId = null;
+  this._instanceId = null;
 
-  this.dom = getDomNodes(this.settings = applyUserSettings(settings));
+  this._dom = getDomNodes(this._settings = applyUserSettings(settings));
 
   const len = instancesMap.length;
   for (let i = 0; i < len; ++i) {
     const inst = instancesMap[i];
-    if (inst && inst.dom.modal.parentNode === null) instancesMap[i] = null;
+    if (inst && inst._dom.modal.parentNode === null) instancesMap[i] = null;
   }
 
-  addClass(this.dom.page, this.settings.loadClass);
-  this.listen();
+  addClass(this._dom.page, this._settings.loadClass);
+  this._listen();
 }
 
 open(selector, e) {
-  const { page } = this.dom;
-  const { onbeforeopen, onopen, class: _class } = this.settings;
-  this.releaseNode(this.current);
+  const { page } = this._dom;
+  const { onbeforeopen, onopen, class: _class } = this._settings;
+  this._releaseNode(this.current);
   this.current = getElementContext(selector);
   if (!this.current) {
     return throwError("VanillaModal target must exist on page");
@@ -219,7 +237,7 @@ open(selector, e) {
   if (typeof onbeforeopen === "function") {
     crankshaftTryCatch(onbeforeopen, this, e);
   }
-  this.captureNode(this.current);
+  this._captureNode(this.current);
   addClass(page, _class);
   page.setAttribute("data-current-modal", this.current.id || "anonymous");
   this.isOpen = true;
@@ -231,28 +249,37 @@ open(selector, e) {
 close(e) {
   if (!this.isOpen) return;
   const {
-    settings: { transitions, onbeforeclose, class: _class },
-    dom,
+    _settings: { transitions, onbeforeclose, class: _class },
+    _dom,
   } = this;
   this.isOpen = false;
   if (typeof onbeforeclose === "function") {
     crankshaftTryCatch(onbeforeclose, this, e);
   }
-  removeClass(dom.page, _class);
+  removeClass(_dom.page, _class);
   if (
     transitions &&
     transitionEnd &&
-    hasTransition(dom.modal)
+    hasTransition(_dom.modal)
   ) {
-    return this.closeModalWithTransition(e);
+    return this._closeModalWithTransition(e);
   }
-  this.closeModal(e);
+  this._closeModal(e);
 }
 
-closeModal(e) {
-  const { onclose } = this.settings;
-  this.dom.page.removeAttribute("data-current-modal");
-  this.releaseNode(this.current);
+destroy() {
+  if (!this._isListening) return throwError("Event listeners already removed");
+  this.close();
+  this._instanceId =
+  instancesMap[this._instanceId] = null;
+  this._dom.modal.removeAttribute(instanceId);
+  this._isListening = false;
+}
+
+_closeModal(e) {
+  const { onclose } = this._settings;
+  this._dom.page.removeAttribute("data-current-modal");
+  this._releaseNode(this.current);
   this.isOpen = false;
   this.current = null;
   if (typeof onclose === "function") {
@@ -260,26 +287,26 @@ closeModal(e) {
   }
 }
 
-closeModalWithTransition(e) {
+_closeModalWithTransition(e) {
   const that = this;
-  const { modal } = this.dom;
+  const { modal } = this._dom;
   function closeHandler() {
     modal.removeEventListener(transitionEnd, closeHandler, false);
-    that.closeModal(e);
+    that._closeModal(e);
   }
   modal.addEventListener(transitionEnd, closeHandler, false);
 }
 
-captureNode(node) {
-  if (node) prepend(this.dom.modalContent, node);
+_captureNode(node) {
+  if (node) prepend(this._dom.modalContent, node);
 }
 
-releaseNode(node) {
-  if (node) prepend(node, this.dom.modalContent);
+_releaseNode(node) {
+  if (node) prepend(node, this._dom.modalContent);
 }
 
-closeKeyHandler(e) {
-  const { closeKeys } = this.settings;
+_closeKeyHandler(e) {
+  const { closeKeys } = this._settings;
   if (
     this.isOpen &&
     isArray(closeKeys) &&
@@ -291,44 +318,35 @@ closeKeyHandler(e) {
   }
 }
 
-outsideClickHandler(e) {
-  if (!this.settings.clickOutside) return;
-  const { modalInner } = this.dom;
+_outsideClickHandler(e) {
+  if (!this._settings.clickOutside) return;
+  const { modalInner } = this._dom;
   let node = e.target;
   do { if (node === html) break; if (node === modalInner) return; }
   while (node = node.parentNode);
   this.close(e);
 }
 
-delegateOpen(e) {
-  const matchedNode = matches(e.target, this.settings.open);
+_delegateOpen(e) {
+  const matchedNode = matches(e.target, this._settings.open);
   if (!matchedNode) return;
   e.preventDefault();
   this.open(matchedNode, e);
 }
 
-delegateClose(e) {
-  if (!matches(e.target, this.settings.close)) return;
+_delegateClose(e) {
+  if (!matches(e.target, this._settings.close)) return;
   e.preventDefault();
   this.close(e);
 }
 
-listen() {
-  if (this.isListening) return throwError("Event listeners already applied");
-  this.dom.modal.setAttribute(
+_listen() {
+  if (this._isListening) return throwError("Event listeners already applied");
+  this._dom.modal.setAttribute(
     instanceId,
-    this.instanceId = instancesMap.push(this) - 1
+    this._instanceId = instancesMap.push(this) - 1
   );
-  this.isListening = true;
-}
-
-destroy() {
-  if (!this.isListening) return throwError("Event listeners already removed");
-  this.close();
-  this.instanceId =
-  instancesMap[this.instanceId] = null;
-  this.dom.modal.removeAttribute(instanceId);
-  this.isListening = false;
+  this._isListening = true;
 }
 
 }; // class VanillaModal
