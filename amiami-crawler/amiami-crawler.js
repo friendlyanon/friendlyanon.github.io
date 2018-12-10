@@ -278,7 +278,7 @@ View = {
     View.currentId = selector.firstElementChild.id;
   },
   firstClose() {
-    View.modal.settings.onclose = null;
+    View.modal._settings.onclose = null;
     Config.set("notfirst", true);
     Pages.main();
   },
@@ -488,7 +488,7 @@ Main = {
     }
     if (await Config.get("notfirst")) Pages.main();
     else {
-      View.modal.settings.onclose = View.firstClose;
+      View.modal._settings.onclose = View.firstClose;
       View.modal.open("#modal_about");
     }
   },
