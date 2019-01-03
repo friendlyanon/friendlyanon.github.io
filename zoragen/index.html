@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>ZoraGen</title>
+    <base href="/zoragen/" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="icon" sizes="16x16 24x24 32x32 48x48 64x64" href="favicon.ico" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+    <script src="js/main.js"></script>
+    <link rel="manifest" href="manifest.json" /> <link rel="script" href="serviceworker.js" /> <meta name="theme-color" content="#2D1108" />
+</head>
+<body class="loading">
+    <app>
+        <img alt="Ricky" src="img/JumpingRicky.gif" />
+        <noscript><h4>You must enable JavaScript.</h4></noscript>
+        <h2>Loading...</h2>
+        <h3>This might take a while...</h3>
+    </app>
+
+    <script type="text/javascript">
+        // Single Page Apps for GitHub Pages
+        // https://github.com/rafrex/spa-github-pages
+        // Copyright (c) 2016 Rafael Pedicini, licensed under the MIT License
+        // ----------------------------------------------------------------------
+        // This script checks to see if a redirect is present in the query string
+        // and converts it back into the correct url and adds it to the
+        // browser's history using window.history.replaceState(...),
+        // which won't cause the browser to attempt to load the new url.
+        // When the single page app is loaded further down in this file,
+        // the correct url will be waiting in the browser's history for
+        // the single page app to route accordingly.
+        (function(l) {
+            if (!l.search) return;
+            const q = {}, rex = /~and~/g;
+            for (const v of l.search.slice(1).split('&')) {
+                const a = v.split('=');
+                q[a[0]] = a.slice(1).join('=').replace(rex, '&');
+
+            }
+            if (q.p === undefined) return;
+            window.history.replaceState(null, null,
+                l.pathname.slice(0, -1) + (q.p || '') +
+                (q.q ? ('?' + q.q) : '') +
+                l.hash
+            );
+        }(window.location))
+    </script>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="register-sw.js"></script> <script>registerServiceWorker.register("serviceworker.js", {
+    ready() {
+        console.log("Page is being served from cache by a service worker.");
+    },
+    cached() {
+        console.log("Content has been cached for offline use.");
+    },
+    offline() {
+        console.log(
+            "No internet connection found. App is running in offline mode."
+        );
+    },
+    error(error) {
+        console.error("Error during service worker registration:\n", error);
+    }
+});
+</script>
+</body>
+</html>

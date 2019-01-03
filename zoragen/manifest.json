@@ -1,0 +1,23 @@
+{
+	"name": "ZoraGen",
+	"short_name": "ZoraGen",
+	"description": "ZoraSharp GUI on the web for generating secrets for the Oracle Zelda games.",
+	"icons": [
+		{
+			"src": "/zoragen/img/icons/android-chrome-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/zoragen/img/icons/android-chrome-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	],
+	"start_url": "/zoragen/",
+	"scope": ".",
+	"display": "standalone",
+	"orientation": "portrait",
+	"background_color": "#2D1108",
+	"theme_color": "#2D1108"
+}
