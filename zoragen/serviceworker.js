@@ -4,13 +4,10 @@
 const cacheName = "zoragen-blazor";
 const filesToCache = [
   "./",
-  "./.nojekyll",
-  "./404.html",
   "./favicon.ico",
   "./index.html",
   "./manifest.json",
   "./register-sw.js",
-  "./robots.txt",
   "./css/site.css",
   "./css/bootstrap/bootstrap.min.css",
   "./css/open-iconic/FONT-LICENSE",
