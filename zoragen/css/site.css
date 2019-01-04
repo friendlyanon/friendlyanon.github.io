@@ -31,11 +31,15 @@ body.loading > app {
 body.loading > app > img {
     width: 60%;
     height: auto;
-    image-rendering: pixelated;
 }
 
 body.loading > app > h3 {
     animation: 1s ease-out 7s 1 backwards might-take-a-while;
+}
+
+.pixel {
+    image-rendering: optimizeSpeed;
+    image-rendering: pixelated;
 }
 
 app {
@@ -159,7 +163,6 @@ app {
 
 .secret-symbol {
     filter: invert(85%);
-    image-rendering: pixelated;
 }
 
 .symbol-strip {
@@ -254,6 +257,8 @@ label[for="ages"]::before {
     height: 20px;
     display: inline-block;
     float: left;
+    image-rendering: optimizeSpeed;
+    image-rendering: pixelated;
 }
 
 label[for="seasons"]::after {
@@ -263,6 +268,8 @@ label[for="seasons"]::after {
     height: 20px;
     display: inline-block;
     float: right;
+    image-rendering: optimizeSpeed;
+    image-rendering: pixelated;
 }
 
 .gametype-input-wrapper > .btn-group {
