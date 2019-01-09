@@ -163,9 +163,6 @@ app {
 
 .secret-symbol {
     filter: invert(85%);
-    width: 16px;
-    height: 20px;
-    overflow: hidden;
 }
 
 .symbol-strip {
