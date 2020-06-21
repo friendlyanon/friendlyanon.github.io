@@ -207,7 +207,7 @@ Parser = {
       if (Config.blacklist.has(item.image_name)) continue;
       View.add({
         thumbnail: item.thumb_url ?
-          "https://img.amiami.jp" + item.thumb_url.replace("/main/", "/thumbnail/") :
+          "https://img.amiami.jp" + item.thumb_url.replace("/main/", "/thumb300/") :
           "https://img.amiami.jp/images/product/thumbnail/noimage.gif",
         name: item.gname || "No Name",
         price: Parser.formatPrice(item),

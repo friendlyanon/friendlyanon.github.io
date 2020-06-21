@@ -319,3 +319,7 @@ h1 .blacklist {
   opacity: .3;
   background-color: #dcddde;
 }
+.thumbnail {
+  width: 80px;
+  height: 80px;
+}
