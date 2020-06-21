@@ -126,8 +126,6 @@ Pages = {
       ontimeout: Pages.onFail
     });
     xhr.setRequestHeader("X-User-Key", "amiami_dev");
-    xhr.setRequestHeader("Origin", "https://www.amiami.com");
-    xhr.setRequestHeader("Referer", "https://www.amiami.com/");
     xhr.setRequestHeader("X-Requested-With", "amiami-crawler");
     $(".loading span").textContent = Pages.current;
     xhr.send();
