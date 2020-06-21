@@ -2,8 +2,8 @@
 // @name        AmiAmi Crawler - Alternative XHR
 // @description Alternative way to make network requests for AmiAmi Crawler
 // @namespace   friendlyanon
-// @include     https://friendlyanon.github.io/amiami-crawler/
-// @version     4
+// @include     https://friendlyanon.github.io/amiami-crawler/*
+// @version     5
 // @grant       GM_xmlhttpRequest
 // @grant       GM.xmlHttpRequest
 // ==/UserScript==
