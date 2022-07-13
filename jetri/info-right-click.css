@@ -1,0 +1,37 @@
+.info-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 69;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.info-modal {
+  z-index: 420;
+  display: inline-block;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 15px;
+  background: black;
+  color: #AAA;
+  border: 1px solid #AAA;
+  border-radius: 5px;
+}
+
+.info-modal > :not(:last-of-type) {
+  margin-bottom: 15px;
+}
+
+.info-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.info-modal-close {
+  margin-left: 10px;
+}
