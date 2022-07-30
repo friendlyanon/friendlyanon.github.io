@@ -117,13 +117,13 @@ document.addEventListener("contextmenu", (e) => {
   if (data == null) {
     return;
   }
-  e.preventDefault();
 
   const box = e.target.closest(".live-box");
-  if (some.call(box.children, (x) => x.classList.contains("live-timer"))) {
+  if (box == null || some.call(box.children, (x) => x.classList.contains("live-timer"))) {
     return;
   }
 
+  e.preventDefault();
   void promptModal(data[indexOf.call(box.parentNode.children, box)]);
 });
 
