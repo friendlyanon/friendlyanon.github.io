@@ -56,7 +56,12 @@ const setFilteredStreams = new Set(JSON.parse(getConfig("filtered-streams", "[]"
 const setFilteredTopics = new Set(JSON.parse(getConfig("filtered-topics", "[]")));
 
 const handleLive = ({ target }) => {
-  const streams = [];
+  const streams = {
+    live: [],
+    upcoming: [],
+    ended: [],
+    cached: true,
+  };
   for (const stream of JSON.parse(target.responseText)) {
     const isYoutubeStream = stream.placeholderType !== "external-stream"
       && (stream.status === "live" || stream.status === "upcoming");
@@ -64,27 +69,18 @@ const handleLive = ({ target }) => {
     const isAllowedStream = !setFilteredStreams.has(stream.id);
     const isAllowedTopic = !setFilteredTopics.has(stream.topic_id);
     if (isYoutubeStream && isHololiveStream && isAllowedStream && isAllowedTopic) {
-      streams.push(jetriLiveFromHolodex(stream));
+      streams[stream.status].push(jetriLiveFromHolodex(stream));
     }
   }
 
-  const result = streams.reduce((a, stream) => {
-    a[stream.status].push(stream);
-    return a;
-  }, {
-    live: [],
-    upcoming: [],
-    ended: [],
-    cached: true,
-  });
   Object.defineProperty(target, "responseText", {
-    value: JSON.stringify(result),
+    value: JSON.stringify(streams),
     writable: true,
     enumerable: true,
     configurable: true,
   });
 
-  return result;
+  return streams;
 };
 
 const handleChannels = ({ target }) => {
