@@ -42,7 +42,18 @@ const jetriChannelFromHolodex = (x, i) => ({
   video_original: x.video_count,
 });
 
-const setFilteredStreams = new Set(JSON.parse(localStorage.getItem("filtered-streams") || "[]"));
+const getConfig = (key, default_) => {
+  const value = localStorage.getItem(key);
+  if (value != null) {
+    return value;
+  }
+
+  localStorage.setItem(key, default_);
+  return default_;
+};
+
+const setFilteredStreams = new Set(JSON.parse(getConfig("filtered-streams", "[]")));
+const setFilteredTopics = new Set(JSON.parse(getConfig("filtered-topics", "[]")));
 
 const handleLive = ({ target }) => {
   const streams = [];
@@ -51,7 +62,8 @@ const handleLive = ({ target }) => {
       && (stream.status === "live" || stream.status === "upcoming");
     const isHololiveStream = stream.channel.org === "Hololive";
     const isAllowedStream = !setFilteredStreams.has(stream.id);
-    if (isYoutubeStream && isHololiveStream && isAllowedStream) {
+    const isAllowedTopic = !setFilteredTopics.has(stream.topic_id);
+    if (isYoutubeStream && isHololiveStream && isAllowedStream && isAllowedTopic) {
       streams.push(jetriLiveFromHolodex(stream));
     }
   }
