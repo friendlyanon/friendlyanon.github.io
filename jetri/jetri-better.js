@@ -104,6 +104,10 @@ const makeLoadHandler = (wrapper, name) => (fn) => (event) => {
   fn.call(event.target, event);
 };
 
+const noop = () => {};
+const setApiKey = (xhr) =>
+  xhr.setRequestHeader("x-apikey", getConfig("api-key", ""));
+
 const originalXhr = XMLHttpRequest;
 window.XMLHttpRequest = class XMLHttpRequest extends originalXhr {
   constructor() {
@@ -112,16 +116,19 @@ window.XMLHttpRequest = class XMLHttpRequest extends originalXhr {
   }
 
   open(method, url) {
+    let afterOpen = noop;
     if (method.toUpperCase() === "GET") {
       const _url = new URL(url, "https://api.holotools.app/");
       const pair = this._map.get(_url.pathname);
       if (pair != null) {
         [this._wrapper, url] = pair;
-        this.setRequestHeader("x-apikey", getConfig("api-key", ""));
+        afterOpen = setApiKey;
       }
     }
 
-    return super.open(method, url);
+    const result = super.open(method, url);
+    afterOpen(this);
+    return result;
   }
 
   set onreadystatechange(fn) {
