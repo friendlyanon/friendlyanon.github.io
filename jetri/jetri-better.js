@@ -117,6 +117,7 @@ window.XMLHttpRequest = class XMLHttpRequest extends originalXhr {
       const pair = this._map.get(_url.pathname);
       if (pair != null) {
         [this._wrapper, url] = pair;
+        this.setRequestHeader("x-apikey", getConfig("api-key", ""));
       }
     }
 
