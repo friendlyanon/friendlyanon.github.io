@@ -35,9 +35,14 @@ function getCell(number) {
   }
 }
 
+const NEED_HELP = 0;
+const PREV_HELP = 1;
+const PAST_HELP = 2;
+
 function stringify(row) {
   let lastSeen = -1;
   let result = "";
+  let helpState = this.hasHelp ? PAST_HELP : NEED_HELP;
 
   for (const number of row) {
     const cell = getCell(number);
@@ -47,20 +52,36 @@ function stringify(row) {
         result += `||${cell}||`;
         break;
       case 0b01:
-        result += `||${cell}`;
+        if (helpState === NEED_HELP) {
+          result += cell;
+          helpState = PREV_HELP;
+        } else {
+          result += `||${cell}`;
+        }
         break;
       case 0b10:
-        result += `||||${cell}||`;
+        if (helpState === PREV_HELP) {
+          result += `||${cell}||`;
+          helpState = PAST_HELP;
+        } else {
+          result += `||||${cell}||`;
+        }
         break;
       case 0b11:
-        result += cell;
+        if (helpState === PREV_HELP) {
+          result += `||${cell}`;
+          helpState = PAST_HELP;
+        } else {
+          result += cell;
+        }
         break;
     }
 
     lastSeen = number;
   }
 
-  return lastSeen === 0 ? `${result}||` : result;
+  this.hasHelp = helpState !== NEED_HELP;
+  return lastSeen === 0 && helpState === PAST_HELP ? `${result}||` : result;
 }
 
 function generate(width, height, difficulty) {
@@ -79,7 +100,7 @@ function generate(width, height, difficulty) {
     }
   }
 
-  return field.map(stringify).join("\n");
+  return field.map(stringify, { hasHelp: false }).join("\n");
 }
 
 const defaults = [10, 10, 0.5];
