@@ -55,6 +55,11 @@ const getConfig = (key, default_) => {
 const setFilteredStreams = new Set(JSON.parse(getConfig("filtered-streams", "[]")));
 const setFilteredTopics = new Set(JSON.parse(getConfig("filtered-topics", "[]")));
 
+const holodexLiveApiUrl =
+  () => "https://holodex.net/api/v2/live?type=placeholder%2Cstream&org=Hololive";
+const holodexChannelsApiUrl =
+  (offset = 0) => `https://holodex.net/api/v2/channels?limit=100&offset=${offset}&type=vtuber&org=Hololive&sort=suborg&order=asc`;
+
 const handleLive = ({ target }) => {
   const streams = {
     live: [],
@@ -80,11 +85,30 @@ const handleLive = ({ target }) => {
     configurable: true,
   });
 
-  return streams;
+  return Promise.resolve(streams);
 };
 
-const handleChannels = ({ target }) => {
+const handleChannels = async ({ target }) => {
   const channels = JSON.parse(target.responseText).map(jetriChannelFromHolodex);
+  if (channels.length === 100) {
+    const headers = { "x-apikey": getConfig("api-key", "") };
+    for (let offset = 100;; offset += 100) {
+      const response = await fetch(holodexChannelsApiUrl(offset), { headers });
+      const json = await response.text();
+      if (json === "[]") {
+        break;
+      }
+
+      const data = JSON.parse(json);
+      for (const channel of data) {
+        channels.push(jetriChannelFromHolodex(channel));
+      }
+      if (data.length !== 100) {
+        break;
+      }
+    }
+  }
+
   const result = { count: 1, total: 1, channels };
   Object.defineProperty(target, "responseText", {
     value: JSON.stringify(result),
@@ -96,9 +120,9 @@ const handleChannels = ({ target }) => {
   return result;
 };
 
-const makeLoadHandler = (wrapper, name) => (fn) => (event) => {
+const makeLoadHandler = (wrapper, name) => (fn) => async (event) => {
   if (event.target.readyState === 4) {
-    const detail = wrapper(event);
+    const detail = await wrapper(event);
     document.dispatchEvent(new CustomEvent(name, { detail }));
   }
   fn.call(event.target, event);
@@ -144,15 +168,10 @@ window.XMLHttpRequest = class XMLHttpRequest extends originalXhr {
   }
 };
 
-const holodexLiveApiUrl =
-  "https://holodex.net/api/v2/live?type=placeholder%2Cstream&org=Hololive";
-const holodexChannelsApiUrl =
-  "https://holodex.net/api/v2/channels?limit=100&offset=0&type=vtuber&org=Hololive&sort=suborg&order=asc";
-
 Object.defineProperty(window.XMLHttpRequest.prototype, "_map", {
   value: new Map([
-    ["/v1/live", [makeLoadHandler(handleLive, "jetri-live"), holodexLiveApiUrl]],
-    ["/v1/channels", [makeLoadHandler(handleChannels, "jetri-channels"), holodexChannelsApiUrl]],
+    ["/v1/live", [makeLoadHandler(handleLive, "jetri-live"), holodexLiveApiUrl()]],
+    ["/v1/channels", [makeLoadHandler(handleChannels, "jetri-channels"), holodexChannelsApiUrl()]],
   ]),
   writable: true,
   configurable: true,
