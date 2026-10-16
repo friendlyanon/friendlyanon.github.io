@@ -21,6 +21,7 @@
   const EQ_BOX_OFFSET = 0x1150;
   const NUM_EQ_SLOTS = 1000;
   const CHARM_ID = 6;
+  const SAVE_FILE_SIZE = 35364;
 
   function parseCharms(buffer) {
     const view = new DataView(buffer);
@@ -145,6 +146,21 @@
     [0x9f8d, 0x97b4], [0xff06, 0x8195]
   ]);
 
+  function scopedOpen(fs, savePath, callback) {
+    let fd;
+    try {
+      fd = fs.openSync(savePath, "r");
+    } catch {
+      console.error("Error: File not found: " + savePath);
+      return 1;
+    }
+    try {
+      return callback(fd);
+    } finally {
+      fs.closeSync(fd);
+    }
+  }
+
   function runNode() {
     const fs = require("fs");
     const path = require("path");
@@ -152,26 +168,33 @@
     const saveFile = process.argv[2];
     if (!saveFile) {
       console.error("Usage: node charms.js <savefile>");
-      process.exit(1);
+      return 1;
     }
 
     const scriptDir = path.dirname(require.main.filename);
     let skillsText;
     try {
       skillsText = fs.readFileSync(path.join(scriptDir, "skills.txt"), "utf-8");
-    } catch (e) {
+    } catch {
       console.error("Error: Could not load skills.txt");
-      process.exit(1);
+      return 1;
     }
     const skills = parseSkills(skillsText);
 
     const savePath = path.resolve(saveFile);
-    if (!fs.existsSync(savePath)) {
-      console.error("Error: File not found: " + savePath);
-      process.exit(1);
+    const saveBuffer = scopedOpen(fs, savePath, function (fd) {
+      const size = fs.fstatSync(fd).size;
+      if (size === SAVE_FILE_SIZE) {
+        const buf = Buffer.alloc(size);
+        fs.readSync(fd, buf, 0, size, 0);
+        return buf;
+      } else {
+        console.error("Error: Invalid save file: expected " + SAVE_FILE_SIZE + " bytes, got " + size + ".");
+      }
+    });
+    if (saveBuffer == null) {
+      return 1;
     }
-
-    const saveBuffer = fs.readFileSync(savePath);
     const ab = saveBuffer.buffer.slice(saveBuffer.byteOffset, saveBuffer.byteOffset + saveBuffer.byteLength);
     const charms = parseCharms(ab);
     const csv = generateCSV(charms, skills);
@@ -180,6 +203,7 @@
     const outPath = path.join(path.dirname(savePath), "CHARM.csv");
     fs.writeFileSync(outPath, sjisBytes);
     console.log("Written: " + outPath);
+    return 0;
   }
 
   function runBrowser(skills) {
@@ -187,6 +211,10 @@
 
     async function handleFile(file) {
       if (!file) return;
+      if (file.size !== SAVE_FILE_SIZE) {
+        alert("Invalid save file: expected " + SAVE_FILE_SIZE + " bytes, got " + file.size + ".");
+        return;
+      }
 
       const saveBuffer = await file.arrayBuffer();
       const charms = parseCharms(saveBuffer);
@@ -220,17 +248,18 @@
 
   async function main() {
     if (isNode) {
-      runNode();
-    } else {
-      let skillsText;
-      try {
-        const resp = await fetch("skills.txt");
-        skillsText = await resp.text();
-      } catch (err) {
-        console.error("Error: Could not load skills.txt");
-        return;
+      const ret = runNode();
+      if (ret !== 0) {
+        process.exit(ret);
       }
-      runBrowser(parseSkills(skillsText));
+      return;
+    }
+
+    try {
+      const resp = await fetch("skills.txt");
+      runBrowser(parseSkills(await resp.text()));
+    } catch {
+      console.error("Error: Could not load skills.txt");
     }
   }
 
