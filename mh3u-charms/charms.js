@@ -184,9 +184,8 @@
 
   function runBrowser(skills) {
     const a = document.getElementById("download");
-    document.getElementById("savefile-input").addEventListener("change", async function (e) {
-      const file = e.target.files[0];
-      e.target.value = "";
+
+    async function handleFile(file) {
       if (!file) return;
 
       const saveBuffer = await file.arrayBuffer();
@@ -200,6 +199,20 @@
       a.click();
       a.removeAttribute("href");
       URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("savefile-input").addEventListener("change", function (e) {
+      handleFile(e.target.files[0]);
+      e.target.value = "";
+    });
+
+    document.addEventListener("dragover", function (e) {
+      e.preventDefault();
+    });
+
+    document.addEventListener("drop", function (e) {
+      e.preventDefault();
+      handleFile(e.dataTransfer.files[0]);
     });
   }
 
