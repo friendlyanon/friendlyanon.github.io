@@ -187,7 +187,7 @@
       if (size === SAVE_FILE_SIZE) {
         const buf = Buffer.alloc(size);
         fs.readSync(fd, buf, 0, size, 0);
-        return buf;
+        return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
       }
 
       console.error(`Error: Invalid save file: expected ${SAVE_FILE_SIZE} bytes, got ${size}.`);
@@ -195,8 +195,7 @@
     if (!saveBuffer) {
       return 1;
     }
-    const ab = saveBuffer.buffer.slice(saveBuffer.byteOffset, saveBuffer.byteOffset + saveBuffer.byteLength);
-    const charms = parseCharms(ab);
+    const charms = parseCharms(saveBuffer);
     const csv = generateCSV(charms, skills);
     const sjisBytes = encodeShiftJIS(csv);
 
