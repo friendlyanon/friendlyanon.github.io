@@ -51,10 +51,10 @@
     for (const c of charms) {
       let line = c.type + "," + c.slots;
       if (c.skill1 !== 0) {
-        line += "," + (skills.get(c.skill1) || "?") + "," + c.pt1;
+        line += `,${skills.get(c.skill1)},${c.pt1}`;
       }
       if (c.skill2 !== 0) {
-        line += "," + (skills.get(c.skill2) || "?") + "," + c.pt2;
+        line += `,${skills.get(c.skill2)},${c.pt2}`;
       }
       lines.push(line);
     }
@@ -188,11 +188,11 @@
         const buf = Buffer.alloc(size);
         fs.readSync(fd, buf, 0, size, 0);
         return buf;
-      } else {
-        console.error("Error: Invalid save file: expected " + SAVE_FILE_SIZE + " bytes, got " + size + ".");
       }
+
+      console.error(`Error: Invalid save file: expected ${SAVE_FILE_SIZE} bytes, got ${size}.`);
     });
-    if (saveBuffer == null) {
+    if (!saveBuffer) {
       return 1;
     }
     const ab = saveBuffer.buffer.slice(saveBuffer.byteOffset, saveBuffer.byteOffset + saveBuffer.byteLength);
@@ -212,7 +212,7 @@
     async function handleFile(file) {
       if (!file) return;
       if (file.size !== SAVE_FILE_SIZE) {
-        alert("Invalid save file: expected " + SAVE_FILE_SIZE + " bytes, got " + file.size + ".");
+        alert(`Invalid save file: expected ${SAVE_FILE_SIZE} bytes, got ${file.size}.`);
         return;
       }
 
