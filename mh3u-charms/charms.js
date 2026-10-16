@@ -152,7 +152,7 @@
       fd = fs.openSync(savePath, "r");
     } catch {
       console.error("Error: File not found: " + savePath);
-      return 1;
+      return;
     }
     try {
       return callback(fd);
@@ -182,7 +182,7 @@
     const skills = parseSkills(skillsText);
 
     const savePath = path.resolve(saveFile);
-    const saveBuffer = scopedOpen(fs, savePath, function (fd) {
+    const saveBuffer = scopedOpen(fs, savePath, (fd) => {
       const size = fs.fstatSync(fd).size;
       if (size === SAVE_FILE_SIZE) {
         const buf = Buffer.alloc(size);
@@ -229,16 +229,16 @@
       URL.revokeObjectURL(url);
     }
 
-    document.getElementById("savefile-input").addEventListener("change", function (e) {
+    document.getElementById("savefile-input").addEventListener("change", (e) => {
       handleFile(e.target.files[0]);
       e.target.value = "";
     });
 
-    document.addEventListener("dragover", function (e) {
+    document.addEventListener("dragover", (e) => {
       e.preventDefault();
     });
 
-    document.addEventListener("drop", function (e) {
+    document.addEventListener("drop", (e) => {
       e.preventDefault();
       handleFile(e.dataTransfer.files[0]);
     });
