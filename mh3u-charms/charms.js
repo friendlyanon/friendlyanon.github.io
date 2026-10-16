@@ -23,9 +23,8 @@
   const CHARM_ID = 6;
   const SAVE_FILE_SIZE = 35364;
 
-  function parseCharms(buffer) {
+  function* parseCharms(buffer) {
     const view = new DataView(buffer);
-    const charms = [];
 
     for (let i = 0; i !== NUM_EQ_SLOTS; i++) {
       const offset = EQ_BOX_OFFSET + i * 16;
@@ -40,10 +39,9 @@
         const skill2 = view.getUint8(offset + 6);
         const pt2 = view.getInt8(offset + 7);
 
-        charms.push({ type, slots, skill1, pt1, skill2, pt2 });
+        yield { type, slots, skill1, pt1, skill2, pt2 };
       }
     }
-    return charms;
   }
 
   function generateCSV(charms, skills) {
@@ -195,8 +193,7 @@
     if (!saveBuffer) {
       return 1;
     }
-    const charms = parseCharms(saveBuffer);
-    const csv = generateCSV(charms, skills);
+    const csv = generateCSV(parseCharms(saveBuffer), skills);
     const sjisBytes = encodeShiftJIS(csv);
 
     const outPath = path.join(path.dirname(savePath), "CHARM.csv");
@@ -216,8 +213,7 @@
       }
 
       const saveBuffer = await file.arrayBuffer();
-      const charms = parseCharms(saveBuffer);
-      const csv = generateCSV(charms, skills);
+      const csv = generateCSV(parseCharms(saveBuffer), skills);
       const sjisBytes = encodeShiftJIS(csv);
 
       const blob = new Blob([sjisBytes], { type: "text/csv;charset=shift_jis" });
